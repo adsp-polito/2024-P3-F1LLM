@@ -1,0 +1,411 @@
+DriverNumber,Status,EventName,EventDate
+8,ERS,Australian Grand Prix,2014-03-16 06:00:00
+13,ERS,Australian Grand Prix,2014-03-16 06:00:00
+9,Oil pressure,Australian Grand Prix,2014-03-16 06:00:00
+1,Engine,Australian Grand Prix,2014-03-16 06:00:00
+44,Engine,Australian Grand Prix,2014-03-16 06:00:00
+3,Technical,Malaysian Grand Prix,2014-03-30 08:00:00
+21,Gearbox,Malaysian Grand Prix,2014-03-30 08:00:00
+99,Electrical,Malaysian Grand Prix,2014-03-30 08:00:00
+25,Power Unit,Malaysian Grand Prix,2014-03-30 08:00:00
+17,Brakes,Malaysian Grand Prix,2014-03-30 08:00:00
+13,Engine,Malaysian Grand Prix,2014-03-30 08:00:00
+22,Clutch,Bahrain Grand Prix,2014-04-06 15:00:00
+20,Clutch,Bahrain Grand Prix,2014-04-06 15:00:00
+8,Gearbox,Chinese Grand Prix,2014-04-20 07:00:00
+99,Engine,Chinese Grand Prix,2014-04-20 07:00:00
+10,Brakes,Spanish Grand Prix,2014-05-11 12:00:00
+25,Exhaust,Spanish Grand Prix,2014-05-11 12:00:00
+77,Engine,Monaco Grand Prix,2014-05-25 12:00:00
+25,Engine,Monaco Grand Prix,2014-05-25 12:00:00
+26,Mechanical,Monaco Grand Prix,2014-05-25 12:00:00
+1,Turbo,Monaco Grand Prix,2014-05-25 12:00:00
+21,ERS,Canadian Grand Prix,2014-06-08 18:00:00
+8,Rear wing,Canadian Grand Prix,2014-06-08 18:00:00
+26,Drivetrain,Canadian Grand Prix,2014-06-08 18:00:00
+44,Brakes,Canadian Grand Prix,2014-06-08 18:00:00
+10,Suspension,Canadian Grand Prix,2014-06-08 18:00:00
+13,Power Unit,Canadian Grand Prix,2014-06-08 18:00:00
+9,Turbo,Canadian Grand Prix,2014-06-08 18:00:00
+25,Brakes,Austrian Grand Prix,2014-06-22 12:00:00
+1,Electrical,Austrian Grand Prix,2014-06-22 12:00:00
+26,Suspension,Austrian Grand Prix,2014-06-22 12:00:00
+6,Gearbox,British Grand Prix,2014-07-06 12:00:00
+9,Suspension,British Grand Prix,2014-07-06 12:00:00
+99,Brakes,German Grand Prix,2014-07-20 12:00:00
+26,Oil leak,German Grand Prix,2014-07-20 12:00:00
+8,Water leak,German Grand Prix,2014-07-20 12:00:00
+17,Gearbox,Belgian Grand Prix,2014-08-24 12:00:00
+13,Mechanical,Belgian Grand Prix,2014-08-24 12:00:00
+45,Power Unit,Belgian Grand Prix,2014-08-24 12:00:00
+14,Engine,Italian Grand Prix,2014-09-07 12:00:00
+99,Water pressure,Singapore Grand Prix,2014-09-21 12:00:00
+21,Electrical,Singapore Grand Prix,2014-09-21 12:00:00
+6,Electrical,Singapore Grand Prix,2014-09-21 12:00:00
+10,Power Unit,Singapore Grand Prix,2014-09-21 12:00:00
+14,Electronics,Japanese Grand Prix,2014-10-05 06:00:00
+10,Brakes,Russian Grand Prix,2014-10-12 11:00:00
+4,Suspension,Russian Grand Prix,2014-10-12 11:00:00
+27,Engine,United States Grand Prix,2014-11-02 20:00:00
+3,Suspension,Brazilian Grand Prix,2014-11-09 16:00:00
+13,Power Unit,Abu Dhabi Grand Prix,2014-11-23 13:00:00
+26,Power Unit,Abu Dhabi Grand Prix,2014-11-23 13:00:00
+7,Wheel,Australian Grand Prix,2015-03-15 05:00:00
+33,Engine,Australian Grand Prix,2015-03-15 05:00:00
+8,Power loss,Australian Grand Prix,2015-03-15 05:00:00
+22,Turbo,Malaysian Grand Prix,2015-03-29 07:00:00
+14,ERS,Malaysian Grand Prix,2015-03-29 07:00:00
+28,Fuel system,Malaysian Grand Prix,2015-03-29 07:00:00
+33,Transmission,Chinese Grand Prix,2015-04-12 06:00:00
+13,Brakes,Chinese Grand Prix,2015-04-12 06:00:00
+26,Power Unit,Chinese Grand Prix,2015-04-12 06:00:00
+27,Gearbox,Chinese Grand Prix,2015-04-12 06:00:00
+33,Electrical,Bahrain Grand Prix,2015-04-19 15:00:00
+55,Engine,Bahrain Grand Prix,2015-04-19 15:00:00
+22,ERS,Bahrain Grand Prix,2015-04-19 15:00:00
+14,Brakes,Spanish Grand Prix,2015-05-10 12:00:00
+14,Gearbox,Monaco Grand Prix,2015-05-24 12:00:00
+13,Brakes,Monaco Grand Prix,2015-05-24 12:00:00
+14,Engine,Canadian Grand Prix,2015-06-07 18:00:00
+8,Gearbox,Austrian Grand Prix,2015-06-21 12:00:00
+55,Power loss,Austrian Grand Prix,2015-06-21 12:00:00
+28,Oil leak,Austrian Grand Prix,2015-06-21 12:00:00
+55,Electrical,British Grand Prix,2015-07-05 12:00:00
+3,Electrical,British Grand Prix,2015-07-05 12:00:00
+12,Gearbox,British Grand Prix,2015-07-05 12:00:00
+55,Electrical,Hungarian Grand Prix,2015-07-26 12:00:00
+7,Power Unit,Hungarian Grand Prix,2015-07-26 12:00:00
+11,Suspension,Hungarian Grand Prix,2015-07-26 12:00:00
+27,Front wing,Hungarian Grand Prix,2015-07-26 12:00:00
+77,Power Unit,Belgian Grand Prix,2015-08-23 12:00:00
+5,Tyre,Belgian Grand Prix,2015-08-23 12:00:00
+55,Power Unit,Belgian Grand Prix,2015-08-23 12:00:00
+3,Power Unit,Belgian Grand Prix,2015-08-23 12:00:00
+13,Engine,Belgian Grand Prix,2015-08-23 12:00:00
+27,Power loss,Belgian Grand Prix,2015-08-23 12:00:00
+8,Tyre,Singapore Grand Prix,2015-09-20 12:00:00
+22,Gearbox,Singapore Grand Prix,2015-09-20 12:00:00
+14,Gearbox,Singapore Grand Prix,2015-09-20 12:00:00
+44,Throttle,Singapore Grand Prix,2015-09-20 12:00:00
+19,Gearbox,Singapore Grand Prix,2015-09-20 12:00:00
+3,Suspension,Russian Grand Prix,2015-10-11 11:00:00
+55,Brakes,Russian Grand Prix,2015-10-11 11:00:00
+6,Throttle,Russian Grand Prix,2015-10-11 11:00:00
+7,Brake duct,United States Grand Prix,2015-10-25 19:00:00
+12,Brakes,Mexican Grand Prix,2015-11-01 19:00:00
+9,Engine,Australian Grand Prix,2016-03-20 05:00:00
+7,Engine,Australian Grand Prix,2016-03-20 05:00:00
+88,Mechanical,Australian Grand Prix,2016-03-20 05:00:00
+22,Power Unit,Bahrain Grand Prix,2016-04-03 15:00:00
+5,Engine,Bahrain Grand Prix,2016-04-03 15:00:00
+30,Hydraulics,Bahrain Grand Prix,2016-04-03 15:00:00
+33,Power Unit,Russian Grand Prix,2016-05-01 12:00:00
+8,Engine,Spanish Grand Prix,2016-05-15 12:00:00
+14,Engine,Spanish Grand Prix,2016-05-15 12:00:00
+27,Engine,Spanish Grand Prix,2016-05-15 12:00:00
+22,Power Unit,Canadian Grand Prix,2016-06-12 18:00:00
+14,Gearbox,European Grand Prix,2016-06-19 13:00:00
+94,Brakes,European Grand Prix,2016-06-19 13:00:00
+55,Suspension,European Grand Prix,2016-06-19 13:00:00
+26,Suspension,European Grand Prix,2016-06-19 13:00:00
+11,Brakes,Austrian Grand Prix,2016-07-03 12:00:00
+14,Battery,Austrian Grand Prix,2016-07-03 12:00:00
+27,Brakes,Austrian Grand Prix,2016-07-03 12:00:00
+19,Brakes,Austrian Grand Prix,2016-07-03 12:00:00
+5,Tyre,Austrian Grand Prix,2016-07-03 12:00:00
+20,Gearbox,British Grand Prix,2016-07-10 12:00:00
+30,Gearbox,British Grand Prix,2016-07-10 12:00:00
+9,Power Unit,British Grand Prix,2016-07-10 12:00:00
+22,Oil leak,Hungarian Grand Prix,2016-07-24 12:00:00
+12,Power Unit,German Grand Prix,2016-07-31 12:00:00
+19,Suspension,German Grand Prix,2016-07-31 12:00:00
+9,Gearbox,Belgian Grand Prix,2016-08-28 12:00:00
+55,Puncture,Belgian Grand Prix,2016-08-28 12:00:00
+26,Battery,Italian Grand Prix,2016-09-04 12:00:00
+94,Oil leak,Italian Grand Prix,2016-09-04 12:00:00
+22,Brakes,Singapore Grand Prix,2016-09-18 12:00:00
+77,Overheating,Singapore Grand Prix,2016-09-18 12:00:00
+12,Brakes,Malaysian Grand Prix,2016-10-02 07:00:00
+44,Engine,Malaysian Grand Prix,2016-10-02 07:00:00
+20,Power loss,Malaysian Grand Prix,2016-10-02 07:00:00
+8,Brakes,Malaysian Grand Prix,2016-10-02 07:00:00
+7,Wheel,United States Grand Prix,2016-10-23 19:00:00
+33,Gearbox,United States Grand Prix,2016-10-23 19:00:00
+21,Brakes,United States Grand Prix,2016-10-23 19:00:00
+26,Gearbox,Abu Dhabi Grand Prix,2016-11-27 13:00:00
+22,Suspension,Abu Dhabi Grand Prix,2016-11-27 13:00:00
+77,Suspension,Abu Dhabi Grand Prix,2016-11-27 13:00:00
+20,Suspension,Abu Dhabi Grand Prix,2016-11-27 13:00:00
+14,Vibrations,Australian Grand Prix,2017-03-26 05:00:00
+20,Suspension,Australian Grand Prix,2017-03-26 05:00:00
+18,Brakes,Australian Grand Prix,2017-03-26 05:00:00
+3,Power Unit,Australian Grand Prix,2017-03-26 05:00:00
+9,Hydraulics,Australian Grand Prix,2017-03-26 05:00:00
+30,Brakes,Australian Grand Prix,2017-03-26 05:00:00
+8,Water leak,Australian Grand Prix,2017-03-26 05:00:00
+14,Driveshaft,Chinese Grand Prix,2017-04-09 06:00:00
+26,Hydraulics,Chinese Grand Prix,2017-04-09 06:00:00
+2,Fuel pressure,Chinese Grand Prix,2017-04-09 06:00:00
+14,Power Unit,Bahrain Grand Prix,2017-04-16 15:00:00
+9,Gearbox,Bahrain Grand Prix,2017-04-16 15:00:00
+33,Brakes,Bahrain Grand Prix,2017-04-16 15:00:00
+20,Electrical,Bahrain Grand Prix,2017-04-16 15:00:00
+2,Power Unit,Bahrain Grand Prix,2017-04-16 15:00:00
+3,Brakes,Russian Grand Prix,2017-04-30 12:00:00
+14,Power Unit,Russian Grand Prix,2017-04-30 12:00:00
+77,Power Unit,Spanish Grand Prix,2017-05-14 12:00:00
+18,Brakes,Monaco Grand Prix,2017-05-28 12:00:00
+27,Gearbox,Monaco Grand Prix,2017-05-28 12:00:00
+14,Power Unit,Canadian Grand Prix,2017-06-11 18:00:00
+26,Power Unit,Canadian Grand Prix,2017-06-11 18:00:00
+33,Electrical,Canadian Grand Prix,2017-06-11 18:00:00
+7,Water pressure,Azerbaijan Grand Prix,2017-06-25 13:00:00
+19,Suspension,Azerbaijan Grand Prix,2017-06-25 13:00:00
+33,Oil pressure,Azerbaijan Grand Prix,2017-06-25 13:00:00
+26,Battery,Azerbaijan Grand Prix,2017-06-25 13:00:00
+30,Power Unit,Azerbaijan Grand Prix,2017-06-25 13:00:00
+55,Engine,Austrian Grand Prix,2017-07-09 12:00:00
+20,Hydraulics,Austrian Grand Prix,2017-07-09 12:00:00
+14,Power Unit,British Grand Prix,2017-07-16 12:00:00
+30,Hydraulics,British Grand Prix,2017-07-16 12:00:00
+27,Brakes,Hungarian Grand Prix,2017-07-30 12:00:00
+40,Oil leak,Hungarian Grand Prix,2017-07-30 12:00:00
+11,Gearbox,Belgian Grand Prix,2017-08-27 12:00:00
+14,Engine,Belgian Grand Prix,2017-08-27 12:00:00
+33,Engine,Belgian Grand Prix,2017-08-27 12:00:00
+14,Gearbox,Italian Grand Prix,2017-09-03 12:00:00
+9,Gearbox,Italian Grand Prix,2017-09-03 12:00:00
+2,Engine,Italian Grand Prix,2017-09-03 12:00:00
+30,Engine,Italian Grand Prix,2017-09-03 12:00:00
+20,Engine,Singapore Grand Prix,2017-09-17 12:00:00
+27,Engine,Singapore Grand Prix,2017-09-17 12:00:00
+55,Engine,Malaysian Grand Prix,2017-10-01 07:00:00
+7,Battery,Malaysian Grand Prix,2017-10-01 07:00:00
+18,Wheel,Japanese Grand Prix,2017-10-08 05:00:00
+27,Front wing,Japanese Grand Prix,2017-10-08 05:00:00
+5,Spark plugs,Japanese Grand Prix,2017-10-08 05:00:00
+14,Engine,United States Grand Prix,2017-10-22 19:00:00
+3,Engine,United States Grand Prix,2017-10-22 19:00:00
+27,Engine,United States Grand Prix,2017-10-22 19:00:00
+55,Engine,Mexican Grand Prix,2017-10-29 19:00:00
+9,Engine,Mexican Grand Prix,2017-10-29 19:00:00
+28,Engine,Mexican Grand Prix,2017-10-29 19:00:00
+27,Electrical,Mexican Grand Prix,2017-10-29 19:00:00
+3,Engine,Mexican Grand Prix,2017-10-29 19:00:00
+28,Engine,Brazilian Grand Prix,2017-11-12 16:00:00
+55,Wheel,Abu Dhabi Grand Prix,2017-11-26 13:00:00
+3,Hydraulics,Abu Dhabi Grand Prix,2017-11-26 13:00:00
+8,Wheel,Australian Grand Prix,2018-03-25 00:00:00
+20,Wheel,Australian Grand Prix,2018-03-25 00:00:00
+10,Engine,Australian Grand Prix,2018-03-25 00:00:00
+9,Steering,Australian Grand Prix,2018-03-25 00:00:00
+35,Brakes,Australian Grand Prix,2018-03-25 00:00:00
+7,Wheel,Bahrain Grand Prix,2018-04-08 00:00:00
+33,Puncture,Bahrain Grand Prix,2018-04-08 00:00:00
+3,Electrical,Bahrain Grand Prix,2018-04-08 00:00:00
+77,Puncture,Azerbaijan Grand Prix,2018-04-29 00:00:00
+2,Gearbox,Spanish Grand Prix,2018-05-13 00:00:00
+31,Oil leak,Spanish Grand Prix,2018-05-13 00:00:00
+7,Turbo,Spanish Grand Prix,2018-05-13 00:00:00
+14,Gearbox,Monaco Grand Prix,2018-05-27 00:00:00
+14,Exhaust,Canadian Grand Prix,2018-06-10 00:00:00
+14,Wheel,French Grand Prix,2018-06-24 00:00:00
+18,Puncture,French Grand Prix,2018-06-24 00:00:00
+11,Engine,French Grand Prix,2018-06-24 00:00:00
+44,Fuel pressure,Austrian Grand Prix,2018-07-01 00:00:00
+28,Hydraulics,Austrian Grand Prix,2018-07-01 00:00:00
+3,Exhaust,Austrian Grand Prix,2018-07-01 00:00:00
+77,Hydraulics,Austrian Grand Prix,2018-07-01 00:00:00
+27,Engine,Austrian Grand Prix,2018-07-01 00:00:00
+33,Brakes,British Grand Prix,2018-07-08 00:00:00
+16,Tyre,British Grand Prix,2018-07-08 00:00:00
+28,Power Unit,British Grand Prix,2018-07-08 00:00:00
+18,Engine,German Grand Prix,2018-07-22 00:00:00
+35,Engine,German Grand Prix,2018-07-22 00:00:00
+3,Engine,German Grand Prix,2018-07-22 00:00:00
+2,Gearbox,Hungarian Grand Prix,2018-07-29 00:00:00
+33,Power loss,Hungarian Grand Prix,2018-07-29 00:00:00
+16,Suspension,Hungarian Grand Prix,2018-07-29 00:00:00
+7,Brakes,Belgian Grand Prix,2018-08-26 00:00:00
+3,Engine,Italian Grand Prix,2018-09-02 00:00:00
+14,Engine,Italian Grand Prix,2018-09-02 00:00:00
+28,Brakes,Italian Grand Prix,2018-09-02 00:00:00
+10,Brakes,Russian Grand Prix,2018-09-30 00:00:00
+28,Brakes,Russian Grand Prix,2018-09-30 00:00:00
+16,Mechanical,Japanese Grand Prix,2018-10-07 00:00:00
+27,Engine,Japanese Grand Prix,2018-10-07 00:00:00
+3,Battery,United States Grand Prix,2018-10-21 00:00:00
+3,Engine,Mexican Grand Prix,2018-10-28 00:00:00
+11,Brakes,Mexican Grand Prix,2018-10-28 00:00:00
+55,Suspension,Mexican Grand Prix,2018-10-28 00:00:00
+14,Engine,Mexican Grand Prix,2018-10-28 00:00:00
+27,Overheating,Brazilian Grand Prix,2018-11-11 00:00:00
+10,Engine,Abu Dhabi Grand Prix,2018-11-25 00:00:00
+31,Engine,Abu Dhabi Grand Prix,2018-11-25 00:00:00
+9,Power loss,Abu Dhabi Grand Prix,2018-11-25 00:00:00
+7,Power loss,Abu Dhabi Grand Prix,2018-11-25 00:00:00
+8,Wheel,Australian Grand Prix,2019-03-17 00:00:00
+3,Damage,Australian Grand Prix,2019-03-17 00:00:00
+55,Engine,Australian Grand Prix,2019-03-17 00:00:00
+27,Engine,Bahrain Grand Prix,2019-03-31 00:00:00
+3,Out of fuel,Bahrain Grand Prix,2019-03-31 00:00:00
+27,Power Unit,Chinese Grand Prix,2019-04-14 00:00:00
+10,Transmission,Azerbaijan Grand Prix,2019-04-28 00:00:00
+8,Brakes,Azerbaijan Grand Prix,2019-04-28 00:00:00
+4,Suspension,Canadian Grand Prix,2019-06-09 00:00:00
+4,Power loss,German Grand Prix,2019-07-28 00:00:00
+3,Exhaust,German Grand Prix,2019-07-28 00:00:00
+8,Water pressure,Hungarian Grand Prix,2019-08-04 00:00:00
+4,Engine,Belgian Grand Prix,2019-09-01 00:00:00
+55,Power loss,Belgian Grand Prix,2019-09-01 00:00:00
+20,Hydraulics,Italian Grand Prix,2019-09-08 00:00:00
+26,Engine,Italian Grand Prix,2019-09-08 00:00:00
+55,Wheel,Italian Grand Prix,2019-09-08 00:00:00
+11,Engine,Singapore Grand Prix,2019-09-22 00:00:00
+88,Brakes,Russian Grand Prix,2019-09-29 00:00:00
+63,Brakes,Russian Grand Prix,2019-09-29 00:00:00
+5,Power loss,Russian Grand Prix,2019-09-29 00:00:00
+33,Brakes,Japanese Grand Prix,2019-10-13 00:00:00
+7,Overheating,Mexican Grand Prix,2019-10-27 00:00:00
+10,Suspension,United States Grand Prix,2019-11-03 00:00:00
+20,Brakes,United States Grand Prix,2019-11-03 00:00:00
+88,Oil leak,United States Grand Prix,2019-11-03 00:00:00
+5,Suspension,United States Grand Prix,2019-11-03 00:00:00
+18,Suspension,Brazilian Grand Prix,2019-11-17 00:00:00
+77,Power Unit,Brazilian Grand Prix,2019-11-17 00:00:00
+18,Brakes,Abu Dhabi Grand Prix,2019-12-01 00:00:00
+26,Suspension,Austrian Grand Prix,2020-07-05 00:00:00
+23,Electronics,Austrian Grand Prix,2020-07-05 00:00:00
+7,Wheel,Austrian Grand Prix,2020-07-05 00:00:00
+63,Fuel pressure,Austrian Grand Prix,2020-07-05 00:00:00
+8,Brakes,Austrian Grand Prix,2020-07-05 00:00:00
+20,Brakes,Austrian Grand Prix,2020-07-05 00:00:00
+18,Engine,Austrian Grand Prix,2020-07-05 00:00:00
+3,Overheating,Austrian Grand Prix,2020-07-05 00:00:00
+33,Electronics,Austrian Grand Prix,2020-07-05 00:00:00
+31,Overheating,Styrian Grand Prix,2020-07-12 00:00:00
+10,Engine,Hungarian Grand Prix,2020-07-19 00:00:00
+27,Power Unit,British Grand Prix,2020-08-02 00:00:00
+16,Electronics,Spanish Grand Prix,2020-08-16 00:00:00
+55,Exhaust,Belgian Grand Prix,2020-08-30 00:00:00
+33,Power Unit,Italian Grand Prix,2020-09-06 00:00:00
+20,Power Unit,Italian Grand Prix,2020-09-06 00:00:00
+5,Brakes,Italian Grand Prix,2020-09-06 00:00:00
+18,Puncture,Tuscan Grand Prix,2020-09-13 00:00:00
+31,Brakes,Tuscan Grand Prix,2020-09-13 00:00:00
+4,Power Unit,Eifel Grand Prix,2020-10-11 00:00:00
+23,Radiator,Eifel Grand Prix,2020-10-11 00:00:00
+31,Gearbox,Eifel Grand Prix,2020-10-11 00:00:00
+77,Power Unit,Eifel Grand Prix,2020-10-11 00:00:00
+33,Puncture,Emilia Romagna Grand Prix,2020-11-01 00:00:00
+31,Gearbox,Emilia Romagna Grand Prix,2020-11-01 00:00:00
+10,Water pressure,Emilia Romagna Grand Prix,2020-11-01 00:00:00
+99,Gearbox,Turkish Grand Prix,2020-11-15 00:00:00
+11,Engine,Bahrain Grand Prix,2020-11-29 00:00:00
+6,Engine,Sakhir Grand Prix,2020-12-06 00:00:00
+11,Transmission,Abu Dhabi Grand Prix,2020-12-13 00:00:00
+14,Rear wing,United States Grand Prix,2021-10-24 00:00:00
+31,Mechanical,United States Grand Prix,2021-10-24 00:00:00
+10,Suspension,United States Grand Prix,2021-10-24 00:00:00
+14,Brakes,Bahrain Grand Prix,2021-03-28 00:00:00
+5,Gearbox,Emilia Romagna Grand Prix,2021-04-18 00:00:00
+22,Electrical,Spanish Grand Prix,2021-05-09 00:00:00
+16,Driveshaft,Monaco Grand Prix,2021-05-23 00:00:00
+63,Gearbox,Azerbaijan Grand Prix,2021-06-06 00:00:00
+31,Turbo,Azerbaijan Grand Prix,2021-06-06 00:00:00
+63,Engine,Styrian Grand Prix,2021-06-27 00:00:00
+63,Gearbox,Dutch Grand Prix,2021-09-05 00:00:00
+22,Power Unit,Dutch Grand Prix,2021-09-05 00:00:00
+9,Hydraulics,Dutch Grand Prix,2021-09-05 00:00:00
+9,Power Unit,Italian Grand Prix,2021-09-12 00:00:00
+10,Suspension,Italian Grand Prix,2021-09-12 00:00:00
+22,Brakes,Italian Grand Prix,2021-09-12 00:00:00
+47,Oil leak,Russian Grand Prix,2021-09-26 00:00:00
+3,Power loss,São Paulo Grand Prix,2021-11-14 00:00:00
+6,Puncture,Qatar Grand Prix,2021-11-21 00:00:00
+77,Damage,Qatar Grand Prix,2021-11-21 00:00:00
+11,Engine,Abu Dhabi Grand Prix,2021-12-12 00:00:00
+99,Gearbox,Abu Dhabi Grand Prix,2021-12-12 00:00:00
+63,Gearbox,Abu Dhabi Grand Prix,2021-12-12 00:00:00
+7,Brakes,Abu Dhabi Grand Prix,2021-12-12 00:00:00
+31,Fuel pump,British Grand Prix,2022-07-03 00:00:00
+77,Gearbox,British Grand Prix,2022-07-03 00:00:00
+11,Fuel pressure,Bahrain Grand Prix,2022-03-20 00:00:00
+1,Fuel pressure,Bahrain Grand Prix,2022-03-20 00:00:00
+10,Power Unit,Bahrain Grand Prix,2022-03-20 00:00:00
+77,Cooling system,Saudi Arabian Grand Prix,2022-03-27 00:00:00
+14,Water pump,Saudi Arabian Grand Prix,2022-03-27 00:00:00
+3,Gearbox,Saudi Arabian Grand Prix,2022-03-27 00:00:00
+22,Power Unit,Saudi Arabian Grand Prix,2022-03-27 00:00:00
+1,Fuel leak,Australian Grand Prix,2022-04-10 00:00:00
+20,Front wing,Miami Grand Prix,2022-05-08 00:00:00
+10,Suspension,Miami Grand Prix,2022-05-08 00:00:00
+24,Water leak,Miami Grand Prix,2022-05-08 00:00:00
+24,Power loss,Spanish Grand Prix,2022-05-22 00:00:00
+16,Turbo,Spanish Grand Prix,2022-05-22 00:00:00
+23,Mechanical,Monaco Grand Prix,2022-05-29 00:00:00
+20,Water pressure,Monaco Grand Prix,2022-05-29 00:00:00
+18,Vibrations,Azerbaijan Grand Prix,2022-06-12 00:00:00
+20,Power Unit,Azerbaijan Grand Prix,2022-06-12 00:00:00
+24,Hydraulics,Azerbaijan Grand Prix,2022-06-12 00:00:00
+16,Power Unit,Azerbaijan Grand Prix,2022-06-12 00:00:00
+55,Hydraulics,Azerbaijan Grand Prix,2022-06-12 00:00:00
+47,Engine,Canadian Grand Prix,2022-06-19 00:00:00
+11,Gearbox,Canadian Grand Prix,2022-06-19 00:00:00
+55,Power Unit,Austrian Grand Prix,2022-07-10 00:00:00
+6,Undertray,Austrian Grand Prix,2022-07-10 00:00:00
+22,Undertray,French Grand Prix,2022-07-24 00:00:00
+77,Power Unit,Hungarian Grand Prix,2022-07-31 00:00:00
+77,Engine,Dutch Grand Prix,2022-09-04 00:00:00
+22,Differential,Dutch Grand Prix,2022-09-04 00:00:00
+3,Oil leak,Italian Grand Prix,2022-09-11 00:00:00
+18,Engine,Italian Grand Prix,2022-09-11 00:00:00
+14,Water pressure,Italian Grand Prix,2022-09-11 00:00:00
+5,Engine,Italian Grand Prix,2022-09-11 00:00:00
+31,Engine,Singapore Grand Prix,2022-10-02 00:00:00
+14,Engine,Singapore Grand Prix,2022-10-02 00:00:00
+23,Hydraulics,Japanese Grand Prix,2022-10-09 00:00:00
+14,Engine,Mexico City Grand Prix,2022-10-30 00:00:00
+4,Gearbox,São Paulo Grand Prix,2022-11-13 00:00:00
+44,Hydraulics,Abu Dhabi Grand Prix,2022-11-20 00:00:00
+14,Water leak,Abu Dhabi Grand Prix,2022-11-20 00:00:00
+20,Engine,British Grand Prix,2023-07-09 00:00:00
+31,Oil leak,British Grand Prix,2023-07-09 00:00:00
+31,Mechanical,Bahrain Grand Prix,2023-03-05 00:00:00
+16,Engine,Bahrain Grand Prix,2023-03-05 00:00:00
+81,Electrical,Bahrain Grand Prix,2023-03-05 00:00:00
+23,Brakes,Saudi Arabian Grand Prix,2023-03-19 00:00:00
+18,Engine,Saudi Arabian Grand Prix,2023-03-19 00:00:00
+63,Engine,Australian Grand Prix,2023-04-02 00:00:00
+24,Overheating,Azerbaijan Grand Prix,2023-04-30 00:00:00
+63,Brakes,Canadian Grand Prix,2023-06-18 00:00:00
+2,Engine,Canadian Grand Prix,2023-06-18 00:00:00
+27,Power loss,Austrian Grand Prix,2023-07-02 00:00:00
+16,Undertray,Dutch Grand Prix,2023-08-27 00:00:00
+31,Steering,Italian Grand Prix,2023-09-03 00:00:00
+22,Engine,Italian Grand Prix,2023-09-03 00:00:00
+77,Technical,Singapore Grand Prix,2023-09-17 00:00:00
+31,Gearbox,Singapore Grand Prix,2023-09-17 00:00:00
+18,Rear wing,Japanese Grand Prix,2023-09-24 00:00:00
+55,Fuel leak,Qatar Grand Prix,2023-10-08 00:00:00
+14,Undertray,United States Grand Prix,2023-10-22 00:00:00
+81,Radiator,United States Grand Prix,2023-10-22 00:00:00
+63,Overheating,São Paulo Grand Prix,2023-11-05 00:00:00
+77,Engine,São Paulo Grand Prix,2023-11-05 00:00:00
+24,Engine,São Paulo Grand Prix,2023-11-05 00:00:00
+16,Engine,São Paulo Grand Prix,2023-11-05 00:00:00
+22,Gearbox,Las Vegas Grand Prix,2023-11-18 00:00:00
+27,Engine,Las Vegas Grand Prix,2023-11-18 00:00:00
+23,Power Unit,Singapore Grand Prix,2024-09-22 00:00:00
+10,Gearbox,Saudi Arabian Grand Prix,2024-03-09 00:00:00
+44,Engine,Australian Grand Prix,2024-03-24 00:00:00
+1,Brakes,Australian Grand Prix,2024-03-24 00:00:00
+24,Gearbox,Japanese Grand Prix,2024-04-07 00:00:00
+16,Engine,Canadian Grand Prix,2024-06-09 00:00:00
+63,Water pressure,British Grand Prix,2024-07-07 00:00:00
+10,Gearbox,British Grand Prix,2024-07-07 00:00:00
+10,Hydraulics,Hungarian Grand Prix,2024-07-21 00:00:00
+22,Overheating,Italian Grand Prix,2024-09-01 00:00:00
+14,Brakes,Mexico City Grand Prix,2024-10-27 00:00:00
+23,Radiator,Las Vegas Grand Prix,2024-11-23 00:00:00
+10,Engine,Las Vegas Grand Prix,2024-11-23 00:00:00

@@ -136,6 +136,13 @@ DriverNumber,Status,EventName,Year
 22,Suspension,Abu Dhabi Grand Prix,2016
 77,Suspension,Abu Dhabi Grand Prix,2016
 20,Suspension,Abu Dhabi Grand Prix,2016
+14,Vibrations,Australian Grand Prix,2017
+20,Suspension,Australian Grand Prix,2017
+18,Brakes,Australian Grand Prix,2017
+3,Power Unit,Australian Grand Prix,2017
+9,Hydraulics,Australian Grand Prix,2017
+30,Brakes,Australian Grand Prix,2017
+8,Water leak,Australian Grand Prix,2017
 14,Driveshaft,Chinese Grand Prix,2017
 26,Hydraulics,Chinese Grand Prix,2017
 2,Fuel pressure,Chinese Grand Prix,2017
@@ -314,9 +321,6 @@ DriverNumber,Status,EventName,Year
 10,Suspension,Italian Grand Prix,2021
 22,Brakes,Italian Grand Prix,2021
 47,Oil leak,Russian Grand Prix,2021
-14,Rear wing,United States Grand Prix,2021
-31,Mechanical,United States Grand Prix,2021
-10,Suspension,United States Grand Prix,2021
 3,Power loss,São Paulo Grand Prix,2021
 6,Puncture,Qatar Grand Prix,2021
 77,Damage,Qatar Grand Prix,2021
@@ -348,8 +352,6 @@ DriverNumber,Status,EventName,Year
 55,Hydraulics,Azerbaijan Grand Prix,2022
 47,Engine,Canadian Grand Prix,2022
 11,Gearbox,Canadian Grand Prix,2022
-31,Fuel pump,British Grand Prix,2022
-77,Gearbox,British Grand Prix,2022
 55,Power Unit,Austrian Grand Prix,2022
 6,Undertray,Austrian Grand Prix,2022
 22,Undertray,French Grand Prix,2022
@@ -379,8 +381,6 @@ DriverNumber,Status,EventName,Year
 63,Brakes,Canadian Grand Prix,2023
 2,Engine,Canadian Grand Prix,2023
 27,Power loss,Austrian Grand Prix,2023
-20,Engine,British Grand Prix,2023
-31,Oil leak,British Grand Prix,2023
 16,Undertray,Dutch Grand Prix,2023
 31,Steering,Italian Grand Prix,2023
 22,Engine,Italian Grand Prix,2023
@@ -406,5 +406,6 @@ DriverNumber,Status,EventName,Year
 10,Gearbox,British Grand Prix,2024
 10,Hydraulics,Hungarian Grand Prix,2024
 22,Overheating,Italian Grand Prix,2024
-23,Power Unit,Singapore Grand Prix,2024
 14,Brakes,Mexico City Grand Prix,2024
+23,Radiator,Las Vegas Grand Prix,2024
+10,Engine,Las Vegas Grand Prix,2024
