@@ -109,7 +109,7 @@ def save_data(final_data, output_folder, year, event_name, driver_number):
     os.makedirs(year_folder, exist_ok=True)
 
     # Save the final CSV file in the year folder
-    output_file = os.path.join(year_folder, f"{driver_number}_combined_data.csv")
+    output_file = os.path.join(year_folder, f"{driver_number}_{event_name}_{year}.csv")
     final_data.to_csv(output_file, index=False)
 
     print(f"Saved: {output_file}")
@@ -190,5 +190,5 @@ data_from_races(
     output_folder,
     include_weather=True,
     save_file=True,
-    years_to_include=range(2019, 2020)  # List of years to include
+    years_to_include=range(2023, 2024)  # List of years to include
 )
