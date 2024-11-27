@@ -101,13 +101,15 @@ def preprocessing(final_data):
 # Function to save the final processed data
 def save_data(final_data, output_folder, year, event_name, driver_number):
     
-    # Create folders based on year and event
-    year_folder = os.path.join(output_folder, str(year))
-    race_folder = os.path.join(year_folder, event_name.replace(' ', '_'))
-    os.makedirs(race_folder, exist_ok=True)
+    # Create the main folder if it doesn't exist
+    os.makedirs(output_folder, exist_ok=True)
     
-    # Save the final CSV file
-    output_file = os.path.join(race_folder, f"{driver_number}_{event_name}_{year}.csv")
+    # Create the year folder inside the main folder
+    year_folder = os.path.join(output_folder, str(year))
+    os.makedirs(year_folder, exist_ok=True)
+
+    # Save the final CSV file in the year folder
+    output_file = os.path.join(year_folder, f"{driver_number}_combined_data.csv")
     final_data.to_csv(output_file, index=False)
 
     print(f"Saved: {output_file}")
