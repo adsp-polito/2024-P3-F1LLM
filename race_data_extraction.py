@@ -194,7 +194,7 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
 
     # Retrieve the schedule for the specified year
     schedule = ff1.get_event_schedule(year)
-    schedule = schedule[1:2]
+    # schedule = schedule[1:2]
 
     if schedule is None:
         print("No data to process for the specified year.")
@@ -297,5 +297,5 @@ else:
         output_folder2,
         include_weather=True,
         save_file=True,
-        year=2023
+        year=2019
     )
