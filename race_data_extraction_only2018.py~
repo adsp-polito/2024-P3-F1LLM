@@ -193,7 +193,6 @@ def data_from_races(db_path, output_folder, include_weather=True, save_file=True
 
     print("All csv have been saved")
 
-
 # Input and output paths
 db_path = 'Failures2014_2024_cleaned.csv'
 output_folder = 'TelemetryData'
