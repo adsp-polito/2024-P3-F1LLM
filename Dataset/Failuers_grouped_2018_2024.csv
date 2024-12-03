@@ -1,215 +1,215 @@
 ,DriverNumber,EventName,Year,Status,ProblemClass
 0,8,Australian Grand Prix,2018,Wheel,Aerodynamics and Tyres
 1,20,Australian Grand Prix,2018,Wheel,Aerodynamics and Tyres
-2,10,Australian Grand Prix,2018,Engine,Engine Problems
-3,9,Australian Grand Prix,2018,Steering,Suspension and Steering
+2,10,Australian Grand Prix,2018,Engine,Engine
+3,9,Australian Grand Prix,2018,Steering,Suspension and Drive
 4,35,Australian Grand Prix,2018,Brakes,Braking System
 5,7,Bahrain Grand Prix,2018,Wheel,Aerodynamics and Tyres
 6,33,Bahrain Grand Prix,2018,Puncture,Aerodynamics and Tyres
-7,3,Bahrain Grand Prix,2018,Electrical,Electrical Issues
+7,3,Bahrain Grand Prix,2018,Electrical,Others
 8,77,Azerbaijan Grand Prix,2018,Puncture,Aerodynamics and Tyres
 9,2,Spanish Grand Prix,2018,Gearbox,Transmission and Gearbox
-10,31,Spanish Grand Prix,2018,Oil leak,Engine Problems
-11,7,Spanish Grand Prix,2018,Turbo,Engine Problems
+10,31,Spanish Grand Prix,2018,Oil leak,Others
+11,7,Spanish Grand Prix,2018,Turbo,Power Unit
 12,14,Monaco Grand Prix,2018,Gearbox,Transmission and Gearbox
-13,14,Canadian Grand Prix,2018,Exhaust,Engine Problems
+13,14,Canadian Grand Prix,2018,Exhaust,Others
 14,14,French Grand Prix,2018,Wheel,Aerodynamics and Tyres
 15,18,French Grand Prix,2018,Puncture,Aerodynamics and Tyres
-16,11,French Grand Prix,2018,Engine,Engine Problems
-17,44,Austrian Grand Prix,2018,Fuel pressure,Fuel Problems
-18,28,Austrian Grand Prix,2018,Hydraulics,Hydraulics
-19,3,Austrian Grand Prix,2018,Exhaust,Engine Problems
-20,77,Austrian Grand Prix,2018,Hydraulics,Hydraulics
-21,27,Austrian Grand Prix,2018,Engine,Engine Problems
+16,11,French Grand Prix,2018,Engine,Engine
+17,44,Austrian Grand Prix,2018,Fuel pressure,Others
+18,28,Austrian Grand Prix,2018,Hydraulics,Suspension and Drive
+19,3,Austrian Grand Prix,2018,Exhaust,Others
+20,77,Austrian Grand Prix,2018,Hydraulics,Suspension and Drive
+21,27,Austrian Grand Prix,2018,Engine,Engine
 22,33,British Grand Prix,2018,Brakes,Braking System
 23,16,British Grand Prix,2018,Tyre,Aerodynamics and Tyres
-24,28,British Grand Prix,2018,Power Unit,Engine Problems
-25,18,German Grand Prix,2018,Engine,Engine Problems
-26,35,German Grand Prix,2018,Engine,Engine Problems
-27,3,German Grand Prix,2018,Engine,Engine Problems
+24,28,British Grand Prix,2018,Power Unit,Power Unit
+25,18,German Grand Prix,2018,Engine,Engine
+26,35,German Grand Prix,2018,Engine,Engine
+27,3,German Grand Prix,2018,Engine,Engine
 28,2,Hungarian Grand Prix,2018,Gearbox,Transmission and Gearbox
-29,33,Hungarian Grand Prix,2018,Power loss,Engine Problems
-30,16,Hungarian Grand Prix,2018,Suspension,Suspension and Steering
+29,33,Hungarian Grand Prix,2018,Power loss,Power Unit
+30,16,Hungarian Grand Prix,2018,Suspension,Suspension and Drive
 31,7,Belgian Grand Prix,2018,Brakes,Braking System
-32,3,Italian Grand Prix,2018,Engine,Engine Problems
-33,14,Italian Grand Prix,2018,Engine,Engine Problems
+32,3,Italian Grand Prix,2018,Engine,Engine
+33,14,Italian Grand Prix,2018,Engine,Engine
 34,28,Italian Grand Prix,2018,Brakes,Braking System
 35,10,Russian Grand Prix,2018,Brakes,Braking System
 36,28,Russian Grand Prix,2018,Brakes,Braking System
-37,16,Japanese Grand Prix,2018,Mechanical,Miscellaneous Mechanical Issues
-38,27,Japanese Grand Prix,2018,Engine,Engine Problems
-39,3,United States Grand Prix,2018,Battery,Electrical Issues
-40,3,Mexican Grand Prix,2018,Engine,Engine Problems
+37,16,Japanese Grand Prix,2018,Mechanical,Others
+38,27,Japanese Grand Prix,2018,Engine,Engine
+39,3,United States Grand Prix,2018,Battery,Others
+40,3,Mexican Grand Prix,2018,Engine,Engine
 41,11,Mexican Grand Prix,2018,Brakes,Braking System
-42,55,Mexican Grand Prix,2018,Suspension,Suspension and Steering
-43,14,Mexican Grand Prix,2018,Engine,Engine Problems
-44,27,Brazilian Grand Prix,2018,Overheating,Cooling System Issues
-45,10,Abu Dhabi Grand Prix,2018,Engine,Engine Problems
-46,31,Abu Dhabi Grand Prix,2018,Engine,Engine Problems
-47,9,Abu Dhabi Grand Prix,2018,Power loss,Engine Problems
-48,7,Abu Dhabi Grand Prix,2018,Power loss,Engine Problems
+42,55,Mexican Grand Prix,2018,Suspension,Suspension and Drive
+43,14,Mexican Grand Prix,2018,Engine,Engine
+44,27,Brazilian Grand Prix,2018,Overheating,Cooling System
+45,10,Abu Dhabi Grand Prix,2018,Engine,Engine
+46,31,Abu Dhabi Grand Prix,2018,Engine,Engine
+47,9,Abu Dhabi Grand Prix,2018,Power loss,Power Unit
+48,7,Abu Dhabi Grand Prix,2018,Power loss,Power Unit
 49,8,Australian Grand Prix,2019,Wheel,Aerodynamics and Tyres
 50,3,Australian Grand Prix,2019,Damage,Aerodynamics and Tyres
-51,55,Australian Grand Prix,2019,Engine,Engine Problems
-52,27,Bahrain Grand Prix,2019,Engine,Engine Problems
-53,3,Bahrain Grand Prix,2019,Out of fuel,Fuel Problems
-54,27,Chinese Grand Prix,2019,Power Unit,Engine Problems
+51,55,Australian Grand Prix,2019,Engine,Engine
+52,27,Bahrain Grand Prix,2019,Engine,Engine
+53,3,Bahrain Grand Prix,2019,Out of fuel,Others
+54,27,Chinese Grand Prix,2019,Power Unit,Power Unit
 55,10,Azerbaijan Grand Prix,2019,Transmission,Transmission and Gearbox
 56,8,Azerbaijan Grand Prix,2019,Brakes,Braking System
-57,4,Canadian Grand Prix,2019,Suspension,Suspension and Steering
-58,4,German Grand Prix,2019,Power loss,Engine Problems
-59,3,German Grand Prix,2019,Exhaust,Engine Problems
-60,8,Hungarian Grand Prix,2019,Water pressure,Cooling System Issues
-61,4,Belgian Grand Prix,2019,Engine,Engine Problems
-62,55,Belgian Grand Prix,2019,Power loss,Engine Problems
-63,20,Italian Grand Prix,2019,Hydraulics,Hydraulics
-64,26,Italian Grand Prix,2019,Engine,Engine Problems
+57,4,Canadian Grand Prix,2019,Suspension,Suspension and Drive
+58,4,German Grand Prix,2019,Power loss,Power Unit
+59,3,German Grand Prix,2019,Exhaust,Others
+60,8,Hungarian Grand Prix,2019,Water pressure,Cooling System
+61,4,Belgian Grand Prix,2019,Engine,Engine
+62,55,Belgian Grand Prix,2019,Power loss,Power Unit
+63,20,Italian Grand Prix,2019,Hydraulics,Suspension and Drive
+64,26,Italian Grand Prix,2019,Engine,Engine
 65,55,Italian Grand Prix,2019,Wheel,Aerodynamics and Tyres
-66,11,Singapore Grand Prix,2019,Engine,Engine Problems
+66,11,Singapore Grand Prix,2019,Engine,Engine
 67,88,Russian Grand Prix,2019,Brakes,Braking System
 68,63,Russian Grand Prix,2019,Brakes,Braking System
-69,5,Russian Grand Prix,2019,Power loss,Engine Problems
+69,5,Russian Grand Prix,2019,Power loss,Power Unit
 70,33,Japanese Grand Prix,2019,Brakes,Braking System
-71,7,Mexican Grand Prix,2019,Overheating,Cooling System Issues
-72,10,United States Grand Prix,2019,Suspension,Suspension and Steering
+71,7,Mexican Grand Prix,2019,Overheating,Cooling System
+72,10,United States Grand Prix,2019,Suspension,Suspension and Drive
 73,20,United States Grand Prix,2019,Brakes,Braking System
-74,88,United States Grand Prix,2019,Oil leak,Engine Problems
-75,5,United States Grand Prix,2019,Suspension,Suspension and Steering
-76,18,Brazilian Grand Prix,2019,Suspension,Suspension and Steering
-77,77,Brazilian Grand Prix,2019,Power Unit,Engine Problems
+74,88,United States Grand Prix,2019,Oil leak,Others
+75,5,United States Grand Prix,2019,Suspension,Suspension and Drive
+76,18,Brazilian Grand Prix,2019,Suspension,Suspension and Drive
+77,77,Brazilian Grand Prix,2019,Power Unit,Power Unit
 78,18,Abu Dhabi Grand Prix,2019,Brakes,Braking System
-79,26,Austrian Grand Prix,2020,Suspension,Suspension and Steering
-80,23,Austrian Grand Prix,2020,Electronics,Electrical Issues
+79,26,Austrian Grand Prix,2020,Suspension,Suspension and Drive
+80,23,Austrian Grand Prix,2020,Electronics,Others
 81,7,Austrian Grand Prix,2020,Wheel,Aerodynamics and Tyres
-82,63,Austrian Grand Prix,2020,Fuel pressure,Fuel Problems
+82,63,Austrian Grand Prix,2020,Fuel pressure,Others
 83,8,Austrian Grand Prix,2020,Brakes,Braking System
 84,20,Austrian Grand Prix,2020,Brakes,Braking System
-85,18,Austrian Grand Prix,2020,Engine,Engine Problems
-86,3,Austrian Grand Prix,2020,Overheating,Cooling System Issues
-87,33,Austrian Grand Prix,2020,Electronics,Electrical Issues
-88,31,Styrian Grand Prix,2020,Overheating,Cooling System Issues
-89,10,Hungarian Grand Prix,2020,Engine,Engine Problems
-90,27,British Grand Prix,2020,Power Unit,Engine Problems
-91,16,Spanish Grand Prix,2020,Electronics,Electrical Issues
-92,55,Belgian Grand Prix,2020,Exhaust,Engine Problems
-93,33,Italian Grand Prix,2020,Power Unit,Engine Problems
-94,20,Italian Grand Prix,2020,Power Unit,Engine Problems
+85,18,Austrian Grand Prix,2020,Engine,Engine
+86,3,Austrian Grand Prix,2020,Overheating,Cooling System
+87,33,Austrian Grand Prix,2020,Electronics,Others
+88,31,Styrian Grand Prix,2020,Overheating,Cooling System
+89,10,Hungarian Grand Prix,2020,Engine,Engine
+90,27,British Grand Prix,2020,Power Unit,Power Unit
+91,16,Spanish Grand Prix,2020,Electronics,Others
+92,55,Belgian Grand Prix,2020,Exhaust,Others
+93,33,Italian Grand Prix,2020,Power Unit,Power Unit
+94,20,Italian Grand Prix,2020,Power Unit,Power Unit
 95,5,Italian Grand Prix,2020,Brakes,Braking System
 96,18,Tuscan Grand Prix,2020,Puncture,Aerodynamics and Tyres
 97,31,Tuscan Grand Prix,2020,Brakes,Braking System
-98,4,Eifel Grand Prix,2020,Power Unit,Engine Problems
-99,23,Eifel Grand Prix,2020,Radiator,Cooling System Issues
+98,4,Eifel Grand Prix,2020,Power Unit,Power Unit
+99,23,Eifel Grand Prix,2020,Radiator,Cooling System
 100,31,Eifel Grand Prix,2020,Gearbox,Transmission and Gearbox
-101,77,Eifel Grand Prix,2020,Power Unit,Engine Problems
+101,77,Eifel Grand Prix,2020,Power Unit,Power Unit
 102,33,Emilia Romagna Grand Prix,2020,Puncture,Aerodynamics and Tyres
 103,31,Emilia Romagna Grand Prix,2020,Gearbox,Transmission and Gearbox
-104,10,Emilia Romagna Grand Prix,2020,Water pressure,Cooling System Issues
+104,10,Emilia Romagna Grand Prix,2020,Water pressure,Cooling System
 105,99,Turkish Grand Prix,2020,Gearbox,Transmission and Gearbox
-106,11,Bahrain Grand Prix,2020,Engine,Engine Problems
-107,6,Sakhir Grand Prix,2020,Engine,Engine Problems
+106,11,Bahrain Grand Prix,2020,Engine,Engine
+107,6,Sakhir Grand Prix,2020,Engine,Engine
 108,11,Abu Dhabi Grand Prix,2020,Transmission,Transmission and Gearbox
 109,14,United States Grand Prix,2021,Rear wing,Aerodynamics and Tyres
-110,31,United States Grand Prix,2021,Mechanical,Miscellaneous Mechanical Issues
-111,10,United States Grand Prix,2021,Suspension,Suspension and Steering
+110,31,United States Grand Prix,2021,Mechanical,Others
+111,10,United States Grand Prix,2021,Suspension,Suspension and Drive
 112,14,Bahrain Grand Prix,2021,Brakes,Braking System
 113,5,Emilia Romagna Grand Prix,2021,Gearbox,Transmission and Gearbox
-114,22,Spanish Grand Prix,2021,Electrical,Electrical Issues
-115,16,Monaco Grand Prix,2021,Driveshaft,Suspension and Steering
+114,22,Spanish Grand Prix,2021,Electrical,Others
+115,16,Monaco Grand Prix,2021,Driveshaft,Suspension and Drive
 116,63,Azerbaijan Grand Prix,2021,Gearbox,Transmission and Gearbox
-117,31,Azerbaijan Grand Prix,2021,Turbo,Engine Problems
-118,63,Styrian Grand Prix,2021,Engine,Engine Problems
+117,31,Azerbaijan Grand Prix,2021,Turbo,Power Unit
+118,63,Styrian Grand Prix,2021,Engine,Engine
 119,63,Dutch Grand Prix,2021,Gearbox,Transmission and Gearbox
-120,22,Dutch Grand Prix,2021,Power Unit,Engine Problems
-121,9,Dutch Grand Prix,2021,Hydraulics,Hydraulics
-122,9,Italian Grand Prix,2021,Power Unit,Engine Problems
-123,10,Italian Grand Prix,2021,Suspension,Suspension and Steering
+120,22,Dutch Grand Prix,2021,Power Unit,Power Unit
+121,9,Dutch Grand Prix,2021,Hydraulics,Suspension and Drive
+122,9,Italian Grand Prix,2021,Power Unit,Power Unit
+123,10,Italian Grand Prix,2021,Suspension,Suspension and Drive
 124,22,Italian Grand Prix,2021,Brakes,Braking System
-125,47,Russian Grand Prix,2021,Oil leak,Engine Problems
-126,3,São Paulo Grand Prix,2021,Power loss,Engine Problems
+125,47,Russian Grand Prix,2021,Oil leak,Others
+126,3,São Paulo Grand Prix,2021,Power loss,Power Unit
 127,6,Qatar Grand Prix,2021,Puncture,Aerodynamics and Tyres
 128,77,Qatar Grand Prix,2021,Damage,Aerodynamics and Tyres
-129,11,Abu Dhabi Grand Prix,2021,Engine,Engine Problems
+129,11,Abu Dhabi Grand Prix,2021,Engine,Engine
 130,99,Abu Dhabi Grand Prix,2021,Gearbox,Transmission and Gearbox
 131,63,Abu Dhabi Grand Prix,2021,Gearbox,Transmission and Gearbox
 132,7,Abu Dhabi Grand Prix,2021,Brakes,Braking System
-133,31,British Grand Prix,2022,Fuel pump,Fuel Problems
+133,31,British Grand Prix,2022,Fuel pump,Others
 134,77,British Grand Prix,2022,Gearbox,Transmission and Gearbox
-135,11,Bahrain Grand Prix,2022,Fuel pressure,Fuel Problems
-136,1,Bahrain Grand Prix,2022,Fuel pressure,Fuel Problems
-137,10,Bahrain Grand Prix,2022,Power Unit,Engine Problems
-138,77,Saudi Arabian Grand Prix,2022,Cooling system,Cooling System Issues
-139,14,Saudi Arabian Grand Prix,2022,Water pump,Cooling System Issues
+135,11,Bahrain Grand Prix,2022,Fuel pressure,Others
+136,1,Bahrain Grand Prix,2022,Fuel pressure,Others
+137,10,Bahrain Grand Prix,2022,Power Unit,Power Unit
+138,77,Saudi Arabian Grand Prix,2022,Cooling system,Cooling System
+139,14,Saudi Arabian Grand Prix,2022,Water pump,Cooling System
 140,3,Saudi Arabian Grand Prix,2022,Gearbox,Transmission and Gearbox
-141,22,Saudi Arabian Grand Prix,2022,Power Unit,Engine Problems
-142,1,Australian Grand Prix,2022,Fuel leak,Fuel Problems
+141,22,Saudi Arabian Grand Prix,2022,Power Unit,Power Unit
+142,1,Australian Grand Prix,2022,Fuel leak,Others
 143,20,Miami Grand Prix,2022,Front wing,Aerodynamics and Tyres
-144,10,Miami Grand Prix,2022,Suspension,Suspension and Steering
-145,24,Miami Grand Prix,2022,Water leak,Cooling System Issues
-146,24,Spanish Grand Prix,2022,Power loss,Engine Problems
-147,16,Spanish Grand Prix,2022,Turbo,Engine Problems
-148,23,Monaco Grand Prix,2022,Mechanical,Miscellaneous Mechanical Issues
-149,20,Monaco Grand Prix,2022,Water pressure,Cooling System Issues
-150,18,Azerbaijan Grand Prix,2022,Vibrations,Suspension and Steering
-151,20,Azerbaijan Grand Prix,2022,Power Unit,Engine Problems
-152,24,Azerbaijan Grand Prix,2022,Hydraulics,Hydraulics
-153,16,Azerbaijan Grand Prix,2022,Power Unit,Engine Problems
-154,55,Azerbaijan Grand Prix,2022,Hydraulics,Hydraulics
-155,47,Canadian Grand Prix,2022,Engine,Engine Problems
+144,10,Miami Grand Prix,2022,Suspension,Suspension and Drive
+145,24,Miami Grand Prix,2022,Water leak,Cooling System
+146,24,Spanish Grand Prix,2022,Power loss,Power Unit
+147,16,Spanish Grand Prix,2022,Turbo,Power Unit
+148,23,Monaco Grand Prix,2022,Mechanical,Others
+149,20,Monaco Grand Prix,2022,Water pressure,Cooling System
+150,18,Azerbaijan Grand Prix,2022,Vibrations,Suspension and Drive
+151,20,Azerbaijan Grand Prix,2022,Power Unit,Power Unit
+152,24,Azerbaijan Grand Prix,2022,Hydraulics,Suspension and Drive
+153,16,Azerbaijan Grand Prix,2022,Power Unit,Power Unit
+154,55,Azerbaijan Grand Prix,2022,Hydraulics,Suspension and Drive
+155,47,Canadian Grand Prix,2022,Engine,Engine
 156,11,Canadian Grand Prix,2022,Gearbox,Transmission and Gearbox
-157,55,Austrian Grand Prix,2022,Power Unit,Engine Problems
+157,55,Austrian Grand Prix,2022,Power Unit,Power Unit
 158,6,Austrian Grand Prix,2022,Undertray,Aerodynamics and Tyres
 159,22,French Grand Prix,2022,Undertray,Aerodynamics and Tyres
-160,77,Hungarian Grand Prix,2022,Power Unit,Engine Problems
-161,77,Dutch Grand Prix,2022,Engine,Engine Problems
-162,22,Dutch Grand Prix,2022,Differential,Suspension and Steering
-163,3,Italian Grand Prix,2022,Oil leak,Engine Problems
-164,18,Italian Grand Prix,2022,Engine,Engine Problems
-165,14,Italian Grand Prix,2022,Water pressure,Cooling System Issues
-166,5,Italian Grand Prix,2022,Engine,Engine Problems
-167,31,Singapore Grand Prix,2022,Engine,Engine Problems
-168,14,Singapore Grand Prix,2022,Engine,Engine Problems
-169,23,Japanese Grand Prix,2022,Hydraulics,Hydraulics
-170,14,Mexico City Grand Prix,2022,Engine,Engine Problems
+160,77,Hungarian Grand Prix,2022,Power Unit,Power Unit
+161,77,Dutch Grand Prix,2022,Engine,Engine
+162,22,Dutch Grand Prix,2022,Differential,Suspension and Drive
+163,3,Italian Grand Prix,2022,Oil leak,Others
+164,18,Italian Grand Prix,2022,Engine,Engine
+165,14,Italian Grand Prix,2022,Water pressure,Cooling System
+166,5,Italian Grand Prix,2022,Engine,Engine
+167,31,Singapore Grand Prix,2022,Engine,Engine
+168,14,Singapore Grand Prix,2022,Engine,Engine
+169,23,Japanese Grand Prix,2022,Hydraulics,Suspension and Drive
+170,14,Mexico City Grand Prix,2022,Engine,Engine
 171,4,São Paulo Grand Prix,2022,Gearbox,Transmission and Gearbox
-172,44,Abu Dhabi Grand Prix,2022,Hydraulics,Hydraulics
-173,14,Abu Dhabi Grand Prix,2022,Water leak,Cooling System Issues
-174,20,British Grand Prix,2023,Engine,Engine Problems
-175,31,British Grand Prix,2023,Oil leak,Engine Problems
-176,31,Bahrain Grand Prix,2023,Mechanical,Miscellaneous Mechanical Issues
-177,16,Bahrain Grand Prix,2023,Engine,Engine Problems
-178,81,Bahrain Grand Prix,2023,Electrical,Electrical Issues
+172,44,Abu Dhabi Grand Prix,2022,Hydraulics,Suspension and Drive
+173,14,Abu Dhabi Grand Prix,2022,Water leak,Cooling System
+174,20,British Grand Prix,2023,Engine,Engine
+175,31,British Grand Prix,2023,Oil leak,Others
+176,31,Bahrain Grand Prix,2023,Mechanical,Others
+177,16,Bahrain Grand Prix,2023,Engine,Engine
+178,81,Bahrain Grand Prix,2023,Electrical,Others
 179,23,Saudi Arabian Grand Prix,2023,Brakes,Braking System
-180,18,Saudi Arabian Grand Prix,2023,Engine,Engine Problems
-181,63,Australian Grand Prix,2023,Engine,Engine Problems
-182,24,Azerbaijan Grand Prix,2023,Overheating,Cooling System Issues
+180,18,Saudi Arabian Grand Prix,2023,Engine,Engine
+181,63,Australian Grand Prix,2023,Engine,Engine
+182,24,Azerbaijan Grand Prix,2023,Overheating,Cooling System
 183,63,Canadian Grand Prix,2023,Brakes,Braking System
-184,2,Canadian Grand Prix,2023,Engine,Engine Problems
-185,27,Austrian Grand Prix,2023,Power loss,Engine Problems
+184,2,Canadian Grand Prix,2023,Engine,Engine
+185,27,Austrian Grand Prix,2023,Power loss,Power Unit
 186,16,Dutch Grand Prix,2023,Undertray,Aerodynamics and Tyres
-187,31,Italian Grand Prix,2023,Steering,Suspension and Steering
-188,22,Italian Grand Prix,2023,Engine,Engine Problems
-189,77,Singapore Grand Prix,2023,Technical,Miscellaneous Mechanical Issues
+187,31,Italian Grand Prix,2023,Steering,Suspension and Drive
+188,22,Italian Grand Prix,2023,Engine,Engine
+189,77,Singapore Grand Prix,2023,Technical,Others
 190,31,Singapore Grand Prix,2023,Gearbox,Transmission and Gearbox
 191,18,Japanese Grand Prix,2023,Rear wing,Aerodynamics and Tyres
-192,55,Qatar Grand Prix,2023,Fuel leak,Fuel Problems
+192,55,Qatar Grand Prix,2023,Fuel leak,Others
 193,14,United States Grand Prix,2023,Undertray,Aerodynamics and Tyres
-194,81,United States Grand Prix,2023,Radiator,Cooling System Issues
-195,63,São Paulo Grand Prix,2023,Overheating,Cooling System Issues
-196,77,São Paulo Grand Prix,2023,Engine,Engine Problems
-197,24,São Paulo Grand Prix,2023,Engine,Engine Problems
-198,16,São Paulo Grand Prix,2023,Engine,Engine Problems
+194,81,United States Grand Prix,2023,Radiator,Cooling System
+195,63,São Paulo Grand Prix,2023,Overheating,Cooling System
+196,77,São Paulo Grand Prix,2023,Engine,Engine
+197,24,São Paulo Grand Prix,2023,Engine,Engine
+198,16,São Paulo Grand Prix,2023,Engine,Engine
 199,22,Las Vegas Grand Prix,2023,Gearbox,Transmission and Gearbox
-200,27,Las Vegas Grand Prix,2023,Engine,Engine Problems
-201,23,Singapore Grand Prix,2024,Power Unit,Engine Problems
+200,27,Las Vegas Grand Prix,2023,Engine,Engine
+201,23,Singapore Grand Prix,2024,Power Unit,Power Unit
 202,10,Saudi Arabian Grand Prix,2024,Gearbox,Transmission and Gearbox
-203,44,Australian Grand Prix,2024,Engine,Engine Problems
+203,44,Australian Grand Prix,2024,Engine,Engine
 204,1,Australian Grand Prix,2024,Brakes,Braking System
 205,24,Japanese Grand Prix,2024,Gearbox,Transmission and Gearbox
-206,16,Canadian Grand Prix,2024,Engine,Engine Problems
-207,63,British Grand Prix,2024,Water pressure,Cooling System Issues
+206,16,Canadian Grand Prix,2024,Engine,Engine
+207,63,British Grand Prix,2024,Water pressure,Cooling System
 208,10,British Grand Prix,2024,Gearbox,Transmission and Gearbox
-209,10,Hungarian Grand Prix,2024,Hydraulics,Hydraulics
-210,22,Italian Grand Prix,2024,Overheating,Cooling System Issues
+209,10,Hungarian Grand Prix,2024,Hydraulics,Suspension and Drive
+210,22,Italian Grand Prix,2024,Overheating,Cooling System
 211,14,Mexico City Grand Prix,2024,Brakes,Braking System
-212,23,Las Vegas Grand Prix,2024,Radiator,Cooling System Issues
-213,10,Las Vegas Grand Prix,2024,Engine,Engine Problems
+212,23,Las Vegas Grand Prix,2024,Radiator,Cooling System
+213,10,Las Vegas Grand Prix,2024,Engine,Engine
