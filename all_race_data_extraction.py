@@ -3,6 +3,7 @@ import pandas as pd
 from IPython.display import clear_output
 import os
 
+
 # Function to load and prepare the session data
 def load_session(year, event_name, driver_number, include_weather):
     try:
@@ -104,8 +105,9 @@ def preprocessing(final_data):
     final_data['Team'] = final_data['Team'].astype(str)
     final_data['LapStartTime'] = pd.to_timedelta(final_data['LapStartTime'], errors='coerce')
     final_data['LapStartDate'] = pd.to_datetime(final_data['LapStartDate'], format="%m/%d/%Y %I:%M:%S %p").dt.time
-
     final_data['TrackStatus'] = final_data['TrackStatus'].astype(int)
+    final_data["Position"] = final_data["Position"].fillna(0)  # Fill NaN with 0
+    final_data["Position"] = final_data["Position"].replace([float('inf'), float('-inf')], 0)
     final_data["Position"] = final_data["Position"].astype(int)
     final_data['Deleted'] = final_data['Deleted'].astype(str).str.upper() == 'TRUE'
     final_data['DeletedReason'] = final_data['DeletedReason'].astype(str)
@@ -147,7 +149,7 @@ def preprocessing(final_data):
 
 
 # Function to save the final processed data
-def save_data(final_data, output_folder, year, event_name, driver_number):
+def save_data(final_data, output_folder, year, event_name):
     # Create the main folder if it doesn't exist
     os.makedirs(output_folder, exist_ok=True)
 
@@ -159,7 +161,7 @@ def save_data(final_data, output_folder, year, event_name, driver_number):
     event_name = event_name.replace(' ', '')
 
     # Save the final CSV file in the year folder
-    output_file = os.path.join(year_folder, f"{driver_number}_{event_name}_{year}.csv")
+    output_file = os.path.join(year_folder, f"{event_name}_{year}.csv")
     final_data.to_csv(output_file, index=False)
 
     print(f"Saved: {output_file}")
@@ -171,7 +173,7 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
 
     # Retrieve the schedule for the specified year
     schedule = ff1.get_event_schedule(year)
-    schedule = schedule[1:2]  # Limiting to one race for testing; modify as needed
+    # schedule = schedule[1:2]  # Limiting to one race for testing; modify as needed
 
     if schedule is None or schedule.empty:
         print("No data to process for the specified year.")
@@ -207,7 +209,6 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
                 telemetry_data = get_telemetry_data(driver_laps, driver, year, event_name)
                 if telemetry_data is not None:
                     all_telemetry.append(telemetry_data)
-                break
             except Exception as e:
                 print(f"Error processing driver {driver} in {event_name}: {e}")
                 continue
@@ -221,21 +222,13 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
         all_telemetry_df = pd.concat(all_telemetry, ignore_index=True)
         session_laps_df = pd.DataFrame(session.laps)
 
-        print("Colonne disponibili in all_laps_df:", all_laps_df.columns)
-
         laps_data = all_laps_df[['DriverNumber', 'LapNumber', 'Compound', 'TyreLife', 'Time']]
-        print("Colonne disponibili in laps_data:", laps_data.columns)
 
         # Merge laps with weather data if included
         if include_weather:
             laps_with_weather = merge_laps_weather(laps_data, session.weather_data, include_weather)
         else:
             laps_with_weather = laps_data
-
-        print("Colonne disponibili in laps_with_weather:", laps_with_weather.columns)
-
-        # Rinomina la colonna "TyreLife" nel DataFrame dei giri prima del merge
-        # laps_with_weather.rename(columns={"TyreLife": "TyreLife_Laps"}, inplace=True)
 
         # Merge session laps with laps+weather
         try:
@@ -268,7 +261,7 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
 
         # Save the final data if requested
         if save_file:
-            save_data(final_data, output_folder, year, event_name, "all_driversssssss")
+            save_data(final_data, output_folder, year, event_name)
 
         # Clear the output after processing each race
         clear_output()
