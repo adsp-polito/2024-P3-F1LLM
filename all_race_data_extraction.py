@@ -105,10 +105,13 @@ def preprocessing(final_data):
     final_data['Team'] = final_data['Team'].astype(str)
     final_data['LapStartTime'] = pd.to_timedelta(final_data['LapStartTime'], errors='coerce')
     final_data['LapStartDate'] = pd.to_datetime(final_data['LapStartDate'], format="%m/%d/%Y %I:%M:%S %p").dt.time
-    final_data['TrackStatus'] = final_data['TrackStatus'].astype(int)
-    final_data["Position"] = final_data["Position"].fillna(0)  # Fill NaN with 0
-    final_data["Position"] = final_data["Position"].replace([float('inf'), float('-inf')], 0)
-    final_data["Position"] = final_data["Position"].astype(int)
+
+    final_data['TrackStatus'] = pd.to_numeric(final_data['TrackStatus'], errors='coerce')
+    final_data['TrackStatus'] = final_data['TrackStatus'].fillna(0).astype(int)
+
+    final_data['Position'] = pd.to_numeric(final_data['Position'], errors='coerce')
+    final_data["Position"] = final_data["Position"].fillna(0).astype(int)
+
     final_data['Deleted'] = final_data['Deleted'].astype(str).str.upper() == 'TRUE'
     final_data['DeletedReason'] = final_data['DeletedReason'].astype(str)
     final_data['FastF1Generated'] = final_data['FastF1Generated'].astype(str).str.upper() == 'TRUE'
@@ -270,7 +273,7 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
 
 
 output_folder2 = 'AllTelemetryData'
-for year in range(2019, 2024):
+for year in range(2020, 2024):
     all_drivers_data_from_races(
         output_folder2,
         include_weather=True,
