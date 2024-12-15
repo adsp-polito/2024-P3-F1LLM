@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import Model # type: ignore
-from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, Dense # type: ignore
+from tensorflow.keras.models import Model   # type: ignore
+from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, Dense   # type: ignore
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 import os
+
 
 def convert_time_to_seconds(time_str):
     """
@@ -391,6 +392,7 @@ def train_autoencoder(
     
     return history
 
+
 # Function to create the LSTM autoencoder model
 def build_autoencoder(sequence_length, num_features, other_metrics):
 
@@ -453,6 +455,7 @@ def build_autoencoder(sequence_length, num_features, other_metrics):
 
     return autoencoder
 
+
 # Main function
 if __name__ == "__main__":
 
@@ -486,7 +489,7 @@ if __name__ == "__main__":
     batch_size = 32
     epochs = 1
     validation_freq = 5
-    other_metrics=["mae"]         # MSE is the standard loss => there is no the need to specify it
+    other_metrics = ["mae"]         # MSE is the standard loss => there is no the need to specify it
 
     # Build the autoencoder
     autoencoder = build_autoencoder(sequence_length, num_features, other_metrics)

@@ -83,7 +83,8 @@ def preprocessing(final_data):
     final_data["DriverNumber"] = final_data["DriverNumber"].astype(str)
     final_data['LapTime'] = pd.to_timedelta(final_data['LapTime'], errors='coerce')
     final_data['LapNumber'] = final_data['LapNumber'].astype(int)
-    final_data["Stint"] = final_data["Stint"].astype(int)
+    final_data['Stint'] = pd.to_numeric(final_data['Stint'], errors='coerce')
+    final_data['Stint'] = final_data['Stint'].fillna(0).astype(int)
     final_data['PitOutTime'] = pd.to_timedelta(final_data['PitOutTime'], errors='coerce')
     final_data['PitInTime'] = pd.to_timedelta(final_data['PitInTime'], errors='coerce')
     final_data['Sector1Time'] = pd.to_timedelta(final_data['Sector1Time'], errors='coerce')
@@ -99,8 +100,10 @@ def preprocessing(final_data):
     final_data['IsPersonalBest'] = final_data['IsPersonalBest'].astype(str).str.upper() == 'TRUE'
     final_data['Compound_x'] = final_data['Compound_x'].astype(str)
     final_data['Compound_y'] = final_data['Compound_y'].astype(str)
-    final_data['TyreLife_x'] = final_data['TyreLife_x'].astype(int)
-    final_data['TyreLife_y'] = final_data['TyreLife_y'].astype(int)
+    final_data['TyreLife_x'] = pd.to_numeric(final_data['TyreLife_x'], errors='coerce')
+    final_data['TyreLife_x'] = final_data['TyreLife_x'].fillna(0).astype(int)
+    final_data['TyreLife_y'] = pd.to_numeric(final_data['TyreLife_y'], errors='coerce')
+    final_data['TyreLife_y'] = final_data['TyreLife_y'].fillna(0).astype(int)
     final_data['FreshTyre'] = final_data['FreshTyre'].astype(str).str.upper() == 'TRUE'
     final_data['Team'] = final_data['Team'].astype(str)
     final_data['LapStartTime'] = pd.to_timedelta(final_data['LapStartTime'], errors='coerce')
@@ -272,11 +275,124 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
     print("All CSV files have been saved.")
 
 
-output_folder2 = 'AllTelemetryData'
-for year in range(2020, 2024):
+def merge_all_in_one_file(output_folder, input_folder='AllTelemetryData'):
+
+    # List to store DataFrames
+    all_data = []
+    n_files = 0
+
+    # Loop through each year folder
+    for year_folder in os.listdir(input_folder):
+        year_path = os.path.join(input_folder, year_folder)
+        if os.path.isdir(year_path):  # Ensure it's a directory
+            # Loop through each file in the year folder
+            for file in os.listdir(year_path):
+                file_path = os.path.join(year_path, file)
+                if file.endswith('.csv'):  # Process only CSV files
+                    # Read the CSV file
+                    data = pd.read_csv(file_path, low_memory=False)
+                    n_files += 1
+
+                    # # Clean and format the data
+                    # data["DriverNumber"] = data["DriverNumber"].astype(str)
+                    # data['LapTime'] = pd.to_timedelta(data['LapTime'], errors='coerce')
+                    # data['LapNumber'] = data['LapNumber'].astype(int)
+                    # data['Stint'] = pd.to_numeric(data['Stint'], errors='coerce')
+                    # data['Stint'] = data['Stint'].fillna(0).astype(int)
+                    # data['PitOutTime'] = pd.to_timedelta(data['PitOutTime'], errors='coerce')
+                    # data['PitInTime'] = pd.to_timedelta(data['PitInTime'], errors='coerce')
+                    # data['Sector1Time'] = pd.to_timedelta(data['Sector1Time'], errors='coerce')
+                    # data['Sector2Time'] = pd.to_timedelta(data['Sector2Time'], errors='coerce')
+                    # data['Sector3Time'] = pd.to_timedelta(data['Sector3Time'], errors='coerce')
+                    # data['Sector1SessionTime'] = pd.to_timedelta(data['Sector1SessionTime'],
+                    #                                                    errors='coerce')
+                    # data['Sector2SessionTime'] = pd.to_timedelta(data['Sector2SessionTime'],
+                    #                                                    errors='coerce')
+                    # data['Sector3SessionTime'] = pd.to_timedelta(data['Sector3SessionTime'],
+                    #                                                    errors='coerce')
+                    # data["SpeedI1"] = data["SpeedI1"].astype(float) if data[
+                    #                                                                    "SpeedI1"] is not None else 0
+                    # data["SpeedI2"] = data["SpeedI2"].astype(float)
+                    # data["SpeedFL"] = data["SpeedFL"].astype(float)
+                    # data["SpeedST"] = data["SpeedST"].astype(float)
+                    # data['IsPersonalBest'] = data['IsPersonalBest'].astype(str).str.upper() == 'TRUE'
+                    # data['Compound_x'] = data['Compound_x'].astype(str)
+                    # data['Compound_y'] = data['Compound_y'].astype(str)
+                    # data['TyreLife_x'] = pd.to_numeric(data['TyreLife_x'], errors='coerce')
+                    # data['TyreLife_x'] = data['TyreLife_x'].fillna(0).astype(int)
+                    # data['TyreLife_y'] = pd.to_numeric(data['TyreLife_y'], errors='coerce')
+                    # data['TyreLife_y'] = data['TyreLife_y'].fillna(0).astype(int)
+                    # data['FreshTyre'] = data['FreshTyre'].astype(str).str.upper() == 'TRUE'
+                    # data['Team'] = data['Team'].astype(str)
+                    # data['LapStartTime'] = pd.to_timedelta(data['LapStartTime'], errors='coerce')
+                    # data['LapStartDate'] = pd.to_datetime(data['LapStartDate'],
+                    #                                             format="%m/%d/%Y %I:%M:%S %p").dt.time
+                    #
+                    # data['TrackStatus'] = pd.to_numeric(data['TrackStatus'], errors='coerce')
+                    # data['TrackStatus'] = data['TrackStatus'].fillna(0).astype(int)
+                    #
+                    # data['Position'] = pd.to_numeric(data['Position'], errors='coerce')
+                    # data["Position"] = data["Position"].fillna(0).astype(int)
+                    #
+                    # data['Deleted'] = data['Deleted'].astype(str).str.upper() == 'TRUE'
+                    # data['DeletedReason'] = data['DeletedReason'].astype(str)
+                    # data['FastF1Generated'] = data['FastF1Generated'].astype(str).str.upper() == 'TRUE'
+                    # data['IsAccurate'] = data['IsAccurate'].astype(str).str.upper() == 'TRUE'
+                    #
+                    # data['TimeXY'] = pd.to_timedelta(data['TimeXY'], errors='coerce')
+                    # data["AirTemp"] = data["AirTemp"].astype(float)
+                    # data["Humidity"] = data["Humidity"].astype(float)
+                    # data["Pressure"] = data["Pressure"].astype(float)
+                    # data["Rainfall"] = data["Rainfall"].astype(str).str.upper() == 'TRUE'
+                    # data['TrackTemp'] = data['TrackTemp'].astype(float)
+                    # data["WindDirection"] = data["WindDirection"].astype(float)
+                    # data["WindSpeed"] = data["WindSpeed"].astype(float)
+                    #
+                    # data['Date'] = pd.to_datetime(data['Date'], format="%m/%d/%Y %I:%M:%S %p").dt.time
+                    # data['SessionTime'] = pd.to_timedelta(data['SessionTime'], errors='coerce')
+                    # data['DriverAhead'] = data['DriverAhead'].astype(str)
+                    # data['DistanceToDriverAhead'] = data['DistanceToDriverAhead'].astype(float)
+                    # data['Time'] = pd.to_timedelta(data['Time'], errors='coerce')
+                    # data['RPM'] = data['RPM'].astype(int)
+                    # data['Speed'] = data['Speed'].astype(int)
+                    # data = data[data['Speed'] > 0]
+                    # data['nGear'] = data['nGear'].astype(int)
+                    # data['Throttle'] = data['Throttle'].astype(int)
+                    # data['Brake'] = data['Brake'].astype(str).str.upper() == 'TRUE'
+                    # data['DRS'] = data['DRS'].astype(int)
+                    # data['Source'] = data['Source'].astype(str)
+                    # data["Distance"] = data["Distance"].astype(float)
+                    # data['RelativeDistance'] = data['RelativeDistance'].astype(float)
+                    # data['Status'] = data['Status'].astype(str)
+                    # data['X'] = data['X'].astype(int)
+                    # data['Y'] = data['Y'].astype(int)
+                    # data['Z'] = data['Z'].astype(int)
+                    # data['Year'] = data['Year'].astype(int)
+                    # data['Event'] = data['Event'].astype(str)
+
+                    # Append to the list
+                    all_data.append(data)
+
+                    print(f'[{n_files}] Finished loading data for {file}')
+
+    # Combine all dataframes into one
+    merged_data = pd.concat(all_data, ignore_index=True)
+
+    # Save the merged data to a single CSV file
+    output_file = 'AllTelemetryData.csv'
+    output_path = os.path.join(output_folder, output_file)
+    merged_data.to_csv(output_path, index=False)
+
+    print(f"{n_files} file merged and saved as {output_file}")
+
+
+output_folder = 'AllTelemetryData'
+for year in range(2018, 2025):
     all_drivers_data_from_races(
-        output_folder2,
+        output_folder,
         include_weather=True,
         save_file=True,
-        year=year
+        year=year,
     )
+
+merge_all_in_one_file(output_folder)
