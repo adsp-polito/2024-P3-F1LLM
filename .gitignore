@@ -2,3 +2,7 @@
 cache
 .idea
 AllTelemetryData
+
+._*
+.AppleDouble
+.LSOverride
