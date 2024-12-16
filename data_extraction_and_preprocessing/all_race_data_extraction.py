@@ -2,7 +2,8 @@ import fastf1 as ff1
 import pandas as pd
 from IPython.display import clear_output
 import os
-
+import numpy as np
+import dask.dataframe as dd
 
 # Function to load and prepare the session data
 def load_session(year, event_name, driver_number, include_weather):
@@ -175,7 +176,7 @@ def save_data(final_data, output_folder, year, event_name):
 
 def all_drivers_data_from_races(output_folder, include_weather=True, save_file=True, year=2018):
     # Enable FastF1 cache
-    ff1.Cache.enable_cache('cache')
+    ff1.Cache.enable_cache('../cache')
 
     # Retrieve the schedule for the specified year
     schedule = ff1.get_event_schedule(year)
@@ -275,124 +276,216 @@ def all_drivers_data_from_races(output_folder, include_weather=True, save_file=T
     print("All CSV files have been saved.")
 
 
-def merge_all_in_one_file(output_folder, input_folder='AllTelemetryData'):
+# def merge_all_in_one_file(output_folder, input_folder='AllTelemetryData'):
+#     # List to store DataFrames
+#     n_files = 0
+#     all_data = []
+#
+#     print(f"Loading data from {input_folder}")
+#
+#     # Loop through each file in the directory
+#     for file in os.listdir(input_folder):
+#         if file.startswith('.'):
+#             continue
+#
+#         print(f'[{n_files}] Loading data for {file}')
+#         if file.endswith('.csv'):  # Process only CSV files
+#             file_path = os.path.join(input_folder, file)  # Get full path of the file
+#
+#             # Read the CSV file in chunks
+#             try:
+#                 chunk_iter = pd.read_csv(file_path, dtype=dtype_dict, chunksize=50000, low_memory=False)  # Adjust chunk size as needed
+#                 for chunk in chunk_iter:
+#                     all_data.append(chunk)
+#                     n_files += 1
+#                 print(f'[{n_files}] Finished loading data for {file}')
+#             except Exception as e:
+#                 print(f"Error reading {file_path}: {str(e)}")
+#                 continue
+#
+#     if all_data:
+#         # Combine all dataframes into one
+#         merged_data = pd.concat(all_data, ignore_index=True)
+#
+#         # Save the merged data to a single CSV file
+#         output_file = 'AllTelemetryData.csv'
+#         output_path = os.path.join(output_folder, output_file)
+#
+#         # Ensure the output folder exists
+#         os.makedirs(output_folder, exist_ok=True)
+#
+#         merged_data.to_csv(output_path, index=False)
+#         print(f"Saved: {output_path}")
+#     else:
+#         print("No files were loaded.")
+#
+#     print(f"{n_files} file(s) merged and saved.")
 
-    # List to store DataFrames
-    all_data = []
-    n_files = 0
 
-    # Loop through each year folder
+import os
+import dask.dataframe as dd
+import numpy as np
+import pandas as pd
+
+
+def convert_csv_to_npz(output_folder, input_folder='AllTelemetryData'):
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Define the dtype for each column
+    dtype_dict = {
+        "DriverNumber": str,
+        "LapNumber": int,
+        "Stint": int,
+        "SpeedI1": float,
+        "SpeedI2": float,
+        "SpeedFL": float,
+        "SpeedST": float,
+        "IsPersonalBest": str,
+        "Compound_x": str,
+        "Compound_y": str,
+        "TyreLife_x": int,
+        "TyreLife_y": int,
+        "FreshTyre": bool,
+        "Team": str,
+        "TrackStatus": int,
+        "Position": int,
+        "Deleted": bool,
+        "DeletedReason": str,
+        "FastF1Generated": bool,
+        "IsAccurate": bool,
+        "AirTemp": float,
+        "Humidity": float,
+        "Pressure": float,
+        "Rainfall": bool,
+        "TrackTemp": float,
+        "WindDirection": float,
+        "WindSpeed": float,
+        "DriverAhead": str,
+        "DistanceToDriverAhead": float,
+        "RPM": int,
+        "Speed": int,
+        "nGear": int,
+        "Throttle": int,
+        "Brake": bool,
+        "DRS": int,
+        "Source": str,
+        "Distance": float,
+        "RelativeDistance": float,
+        "Status": str,
+        "X": int,
+        "Y": int,
+        "Z": int,
+        "Year": int,
+        "Event": str,
+        # Specify time columns as object
+        "PitInTime": object,
+        "PitOutTime": object,
+        "Sector1SessionTime": object,
+        "Sector1Time": object,
+        "Sector2SessionTime": object,
+        "Sector2Time": object,
+        "Sector3SessionTime": object,
+        "Sector3Time": object,
+        "LapStartTime": object,
+        "SessionTime": object,
+        "LapTime": object,
+        "TimeXY": object,
+        "LapStartDate": object,
+        "Date": object,
+    }
+
+    # Define time columns to convert
+    time_columns = [
+        'LapTime', 'Sector1Time', 'Sector2Time', 'Sector3Time',
+        'Sector1SessionTime', 'Sector2SessionTime', 'Sector3SessionTime',
+        'LapStartTime', 'SessionTime', 'TimeXY', 'LapStartDate', 'Date',
+        'PitInTime', 'PitOutTime'
+    ]
+
+    # Loop through each year folder in the input folder
     for year_folder in os.listdir(input_folder):
-        year_path = os.path.join(input_folder, year_folder)
-        if os.path.isdir(year_path):  # Ensure it's a directory
-            # Loop through each file in the year folder
-            for file in os.listdir(year_path):
-                file_path = os.path.join(year_path, file)
-                if file.endswith('.csv'):  # Process only CSV files
-                    # Read the CSV file
-                    data = pd.read_csv(file_path, low_memory=False)
-                    n_files += 1
+        year_folder_path = os.path.join(input_folder, year_folder)
 
-                    # # Clean and format the data
-                    # data["DriverNumber"] = data["DriverNumber"].astype(str)
-                    # data['LapTime'] = pd.to_timedelta(data['LapTime'], errors='coerce')
-                    # data['LapNumber'] = data['LapNumber'].astype(int)
-                    # data['Stint'] = pd.to_numeric(data['Stint'], errors='coerce')
-                    # data['Stint'] = data['Stint'].fillna(0).astype(int)
-                    # data['PitOutTime'] = pd.to_timedelta(data['PitOutTime'], errors='coerce')
-                    # data['PitInTime'] = pd.to_timedelta(data['PitInTime'], errors='coerce')
-                    # data['Sector1Time'] = pd.to_timedelta(data['Sector1Time'], errors='coerce')
-                    # data['Sector2Time'] = pd.to_timedelta(data['Sector2Time'], errors='coerce')
-                    # data['Sector3Time'] = pd.to_timedelta(data['Sector3Time'], errors='coerce')
-                    # data['Sector1SessionTime'] = pd.to_timedelta(data['Sector1SessionTime'],
-                    #                                                    errors='coerce')
-                    # data['Sector2SessionTime'] = pd.to_timedelta(data['Sector2SessionTime'],
-                    #                                                    errors='coerce')
-                    # data['Sector3SessionTime'] = pd.to_timedelta(data['Sector3SessionTime'],
-                    #                                                    errors='coerce')
-                    # data["SpeedI1"] = data["SpeedI1"].astype(float) if data[
-                    #                                                                    "SpeedI1"] is not None else 0
-                    # data["SpeedI2"] = data["SpeedI2"].astype(float)
-                    # data["SpeedFL"] = data["SpeedFL"].astype(float)
-                    # data["SpeedST"] = data["SpeedST"].astype(float)
-                    # data['IsPersonalBest'] = data['IsPersonalBest'].astype(str).str.upper() == 'TRUE'
-                    # data['Compound_x'] = data['Compound_x'].astype(str)
-                    # data['Compound_y'] = data['Compound_y'].astype(str)
-                    # data['TyreLife_x'] = pd.to_numeric(data['TyreLife_x'], errors='coerce')
-                    # data['TyreLife_x'] = data['TyreLife_x'].fillna(0).astype(int)
-                    # data['TyreLife_y'] = pd.to_numeric(data['TyreLife_y'], errors='coerce')
-                    # data['TyreLife_y'] = data['TyreLife_y'].fillna(0).astype(int)
-                    # data['FreshTyre'] = data['FreshTyre'].astype(str).str.upper() == 'TRUE'
-                    # data['Team'] = data['Team'].astype(str)
-                    # data['LapStartTime'] = pd.to_timedelta(data['LapStartTime'], errors='coerce')
-                    # data['LapStartDate'] = pd.to_datetime(data['LapStartDate'],
-                    #                                             format="%m/%d/%Y %I:%M:%S %p").dt.time
-                    #
-                    # data['TrackStatus'] = pd.to_numeric(data['TrackStatus'], errors='coerce')
-                    # data['TrackStatus'] = data['TrackStatus'].fillna(0).astype(int)
-                    #
-                    # data['Position'] = pd.to_numeric(data['Position'], errors='coerce')
-                    # data["Position"] = data["Position"].fillna(0).astype(int)
-                    #
-                    # data['Deleted'] = data['Deleted'].astype(str).str.upper() == 'TRUE'
-                    # data['DeletedReason'] = data['DeletedReason'].astype(str)
-                    # data['FastF1Generated'] = data['FastF1Generated'].astype(str).str.upper() == 'TRUE'
-                    # data['IsAccurate'] = data['IsAccurate'].astype(str).str.upper() == 'TRUE'
-                    #
-                    # data['TimeXY'] = pd.to_timedelta(data['TimeXY'], errors='coerce')
-                    # data["AirTemp"] = data["AirTemp"].astype(float)
-                    # data["Humidity"] = data["Humidity"].astype(float)
-                    # data["Pressure"] = data["Pressure"].astype(float)
-                    # data["Rainfall"] = data["Rainfall"].astype(str).str.upper() == 'TRUE'
-                    # data['TrackTemp'] = data['TrackTemp'].astype(float)
-                    # data["WindDirection"] = data["WindDirection"].astype(float)
-                    # data["WindSpeed"] = data["WindSpeed"].astype(float)
-                    #
-                    # data['Date'] = pd.to_datetime(data['Date'], format="%m/%d/%Y %I:%M:%S %p").dt.time
-                    # data['SessionTime'] = pd.to_timedelta(data['SessionTime'], errors='coerce')
-                    # data['DriverAhead'] = data['DriverAhead'].astype(str)
-                    # data['DistanceToDriverAhead'] = data['DistanceToDriverAhead'].astype(float)
-                    # data['Time'] = pd.to_timedelta(data['Time'], errors='coerce')
-                    # data['RPM'] = data['RPM'].astype(int)
-                    # data['Speed'] = data['Speed'].astype(int)
-                    # data = data[data['Speed'] > 0]
-                    # data['nGear'] = data['nGear'].astype(int)
-                    # data['Throttle'] = data['Throttle'].astype(int)
-                    # data['Brake'] = data['Brake'].astype(str).str.upper() == 'TRUE'
-                    # data['DRS'] = data['DRS'].astype(int)
-                    # data['Source'] = data['Source'].astype(str)
-                    # data["Distance"] = data["Distance"].astype(float)
-                    # data['RelativeDistance'] = data['RelativeDistance'].astype(float)
-                    # data['Status'] = data['Status'].astype(str)
-                    # data['X'] = data['X'].astype(int)
-                    # data['Y'] = data['Y'].astype(int)
-                    # data['Z'] = data['Z'].astype(int)
-                    # data['Year'] = data['Year'].astype(int)
-                    # data['Event'] = data['Event'].astype(str)
+        if os.path.isdir(year_folder_path):
+            print(f"Processing year folder: {year_folder}")
 
-                    # Append to the list
-                    all_data.append(data)
+            # Loop through each file in the current year folder
+            for file in os.listdir(year_folder_path):
+                if file.endswith('.csv'):
+                    file_path = os.path.join(year_folder_path, file)
+                    print(f'Loading data for {file}')
 
-                    print(f'[{n_files}] Finished loading data for {file}')
+                    # Use Pandas to read the CSV file with specified dtype
+                    data = pd.read_csv(file_path, dtype=dtype_dict)
 
-    # Combine all dataframes into one
-    merged_data = pd.concat(all_data, ignore_index=True)
+                    # Convert time columns to milliseconds
+                    for col in time_columns:
+                        if col in data.columns:
+                            try:
+                                # Convert to timedelta and get total seconds in milliseconds
+                                data[col] = pd.to_timedelta(data[col], errors='coerce').dt.total_seconds() * 1000
+                            except Exception as e:
+                                print(f"Error processing column {col}: {e}")
 
-    # Save the merged data to a single CSV file
-    output_file = 'AllTelemetryData.csv'
-    output_path = os.path.join(output_folder, output_file)
-    merged_data.to_csv(output_path, index=False)
+                    # Convert the DataFrame to numpy array
+                    data_np = data.to_numpy()
 
-    print(f"{n_files} file merged and saved as {output_file}")
+                    # Define the output path for the .npz file
+                    output_file_path = os.path.join(output_folder, f"{year_folder}_{os.path.splitext(file)[0]}.npy")
+
+                    # Save the dataframe as a compressed numpy file
+                    np.save(output_file_path, data=data_np)
+                    print(f'Saved {file} as {output_file_path}')
+
+    print(f"All files have been processed and saved to: {output_folder}")
+
+    print(f"All files have been processed and saved to: {output_folder}")
 
 
-output_folder = 'AllTelemetryData'
-for year in range(2018, 2025):
-    all_drivers_data_from_races(
-        output_folder,
-        include_weather=True,
-        save_file=True,
-        year=year,
-    )
+def merge_npz(input_folder, output_file):
+    """
+    Merge and concatenate multiple .npy files into a single .npz file.
 
-merge_all_in_one_file(output_folder)
+    Parameters:
+    - input_folder: Folder containing the .npy files.
+    - output_file: Path to the output .npz file.
+    """
+    concatenated_data = None  # Initialize a variable to hold the concatenated data
+
+    # List all .npy files in the input folder
+    npy_files = [f for f in os.listdir(input_folder) if f.endswith('.npz')]
+    print(f"Found {len(npy_files)} .npz files to merge and concatenate.")
+
+    for file in npy_files:
+        file_path = os.path.join(input_folder, file)
+
+        try:
+            # Load the .npy file
+            data = np.load(file_path, mmap_mode='r')  # Memory-mapped to reduce memory usage
+
+            # Concatenate data incrementally
+            if concatenated_data is None:
+                concatenated_data = data
+            else:
+                concatenated_data = np.concatenate((concatenated_data, data), axis=0)
+
+            print(f"Processed: {file}")
+        except Exception as e:
+            print(f"Error processing {file}: {e}")
+
+    # Save the concatenated data to a single .npz file
+    np.savez_compressed(output_file, concatenated_data=concatenated_data)
+    print(f"Saved concatenated data to: {output_file}")
+
+
+input_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/NumpyData'
+output_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/Dataset/AllTelemetry.npz'
+# for year in range(2018, 2025):
+#    all_drivers_data_from_races(
+#        output_folder,
+#        include_weather=True,
+#        save_file=True,
+#        year=year,
+#    )
+
+merge_npz(input_folder, output_folder)

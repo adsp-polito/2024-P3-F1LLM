@@ -6,3 +6,6 @@ AllTelemetryData
 ._*
 .AppleDouble
 .LSOverride
+__pycache__
+NumpyData
+__pycache__
