@@ -474,7 +474,7 @@ if __name__ == "__main__":
         print("CUDA is not available. Training will use the CPU.")
     
     # Path to the dataset
-    dataset_path = "/Users/manuelemustari/Desktop/Università/Politecnico di Torino/2° year/1° period/Applied Data Science Project/Project/2024-P3-F1LLM/Dataset/AllTelemetryData/2022/all_drivers_AustralianGrandPrix_2022.csv"
+    dataset_path = "/AllTelemetryData/2022/all_drivers_AustralianGrandPrix_2022.csv"
     
     # Load and preprocess data
     print("Loading and preprocessing data...")
@@ -518,6 +518,6 @@ if __name__ == "__main__":
     training_diagnostics(autoencoder, history, val_data, sequence_length)
     
     # Save the trained model
-    # print("Saving the trained model...")
-    # autoencoder.save("autoencoder_fastf1.keras")n
-    # print("Model saved as 'autoencoder_fastf1.keras'")
+    print("Saving the trained model...")
+    autoencoder.save("autoencoder_fastf1.keras")
+    print("Model saved as 'autoencoder_fastf1.keras'")
