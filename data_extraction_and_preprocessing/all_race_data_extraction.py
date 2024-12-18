@@ -4,6 +4,8 @@ from IPython.display import clear_output
 import os
 import numpy as np
 import dask.dataframe as dd
+from collections import defaultdict
+
 
 # Function to load and prepare the session data
 def load_session(year, event_name, driver_number, include_weather):
@@ -442,44 +444,72 @@ def convert_csv_to_npz(output_folder, input_folder='AllTelemetryData'):
     print(f"All files have been processed and saved to: {output_folder}")
 
 
-def merge_npz(input_folder, output_file):
+def merge_npz_by_year(input_folder, output_folder, chunk_size=1_000_000):
     """
-    Merge and concatenate multiple .npy files into a single .npz file.
+    Merge .npz files by year into a single .npz file per year, using chunk processing.
 
     Parameters:
-    - input_folder: Folder containing the .npy files.
-    - output_file: Path to the output .npz file.
+    - input_folder: Folder containing the .npz files.
+    - output_folder: Folder to save the merged .npz files.
+    - chunk_size: Number of rows to process at a time to avoid memory issues.
     """
-    concatenated_data = None  # Initialize a variable to hold the concatenated data
+    # Ensure the output folder exists
+    os.makedirs(output_folder, exist_ok=True)
 
-    # List all .npy files in the input folder
-    npy_files = [f for f in os.listdir(input_folder) if f.endswith('.npz')]
-    print(f"Found {len(npy_files)} .npz files to merge and concatenate.")
+    # Dictionary to group files by year
+    files_by_year = defaultdict(list)
 
-    for file in npy_files:
-        file_path = os.path.join(input_folder, file)
+    # List all .npz files in the input folder
+    npz_files = [f for f in os.listdir(input_folder) if f.endswith('.npz')]
 
+    # Group files by year
+    for file in npz_files:
         try:
-            # Load the .npy file
-            data = np.load(file_path, mmap_mode='r')  # Memory-mapped to reduce memory usage
-
-            # Concatenate data incrementally
-            if concatenated_data is None:
-                concatenated_data = data
-            else:
-                concatenated_data = np.concatenate((concatenated_data, data), axis=0)
-
-            print(f"Processed: {file}")
+            # Extract the year from the filename (assuming the year is the first part of the filename)
+            year = file.split('_')[1]
+            files_by_year[year].append(file)
         except Exception as e:
-            print(f"Error processing {file}: {e}")
+            print(f"Error processing filename {file}: {e}")
 
-    # Save the concatenated data to a single .npz file
-    np.savez_compressed(output_file, concatenated_data=concatenated_data)
-    print(f"Saved concatenated data to: {output_file}")
+    print(f"Found files for years: {list(files_by_year.keys())}")
+
+    # Process each year
+    for year, files in files_by_year.items():
+        print(f"Merging files for year {year}: {files}")
+
+        data_accumulator = []  # List to collect chunks
+
+        for file in files:
+            file_path = os.path.join(input_folder, file)
+            try:
+                with np.load(file_path, allow_pickle=True) as data:
+                    for key in data.files:
+                        array = data[key]
+                        print(f"Processing file: {file}, key: {key}, shape: {array.shape}")
+
+                        # Process array in chunks
+                        for i in range(0, array.shape[0], chunk_size):
+                            chunk = array[i:i + chunk_size]
+                            data_accumulator.append(chunk)
+
+            except Exception as e:
+                print(f"Error processing {file}: {e}")
+
+        # Concatenate all chunks for the year
+        if data_accumulator:
+            try:
+                concatenated_data = np.concatenate(data_accumulator, axis=0)
+                output_file = os.path.join(output_folder, f"merged_{year}.npz")
+                np.savez_compressed(output_file, data=concatenated_data)
+                print(f"Saved merged data for year {year} with shape: {concatenated_data.shape}")
+            except Exception as e:
+                print(f"Error saving merged data for year {year}: {e}")
+        else:
+            print(f"No data to merge for year {year}.")
 
 
-input_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/NumpyData'
-output_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/Dataset/AllTelemetry.npz'
+input_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/AllTelemetryData'
+output_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/Dataset'
 # for year in range(2018, 2025):
 #    all_drivers_data_from_races(
 #        output_folder,
@@ -488,4 +518,4 @@ output_folder = 'C:/Users/rioti/Documents/GitHub/2024-P3-F1LLM/Dataset/AllTeleme
 #        year=year,
 #    )
 
-merge_npz(input_folder, output_folder)
+merge_npz_by_year(input_folder, output_folder)
