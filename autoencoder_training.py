@@ -68,6 +68,7 @@ def map_grand_prix(df):
     
     return df, event_mapping
 
+
 # Preprocess FastF1 data specifications
 def normalize_data(df):
     """
@@ -119,6 +120,8 @@ def normalize_data(df):
     # THIS IS TEMPORARY: WE NEED TO MANAGE BETTER THE "OBJECT" TYPE
 
     # Handle `Compound` with OneHotEncoder
+    df.rename(columns={'Compound_x': 'Compound'}, inplace=True)
+
     if 'Compound' in df.columns:
         one_hot = pd.get_dummies(df['Compound'], prefix='Compound')
         df = pd.concat([df, one_hot], axis=1).drop(columns=['Compound'])
@@ -136,9 +139,9 @@ def normalize_data(df):
 
     # Columns to drop (irrelevant or redundant)
     drop_cols = [
-        'Driver', 'SpeedST', 'TyreLife', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate',
+        'Driver', 'SpeedST', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate',
         'Deleted', 'DeletedReason', 'FastF1Generated', 'isAccurate', 'Status', 'Date', 'SessionTime',
-        'RelativeDistance', 'Source', 'DriverAhead', 
+        'RelativeDistance', 'Source', 'DriverAhead', 'Compound_y', 'TyreLife_y'
     ]
 
     # Drop irrelevant columns if they exist in the dataset
@@ -173,6 +176,7 @@ def normalize_data(df):
     processed_data = preprocessor.fit_transform(df)
     return processed_data
 
+
 # Updated function to load and preprocess data
 def load_and_preprocess_data(file_path):
     """
@@ -183,16 +187,23 @@ def load_and_preprocess_data(file_path):
         array: Preprocessed dataset ready for sequence modeling.
     """
     # Load dataset
-    data = pd.read_csv(file_path)
+    np_data = np.load(file_path, allow_pickle=True)
+    data = pd.DataFrame(np_data['data'], columns=['Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
+                                                  'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
+                                                  'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
+                                                  'Compound_x', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate',
+                                                  'TrackStatus', 'Position', 'Deleted', 'DeletedReason', 'FastF1Generated', 'IsAccurate',
+                                                  'Compound_y', 'TyreLife_y', 'TimeXY', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall',
+                                                  'TrackTemp', 'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead',
+                                                  'DistanceToDriverAhead', 'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS',
+                                                  'Source', 'Distance', 'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'])
+    # data = pd.read_csv(file_path)
     
     # Preprocess data
     processed_data = normalize_data(data)
     
     return processed_data
 
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 def plot_training_history(history):
     """
@@ -213,6 +224,7 @@ def plot_training_history(history):
     plt.grid(True)
     plt.show()
 
+
 def calculate_reconstruction_error(autoencoder, X_val):
     """
     Calculates reconstruction error for validation data.
@@ -227,6 +239,7 @@ def calculate_reconstruction_error(autoencoder, X_val):
     reconstructed_data = autoencoder.predict(X_val, verbose=0)
     reconstruction_error = np.mean((X_val - reconstructed_data)**2, axis=(1, 2))
     return reconstruction_error
+
 
 def compare_reconstruction(autoencoder, X_val, num_samples):
     """
@@ -474,7 +487,7 @@ if __name__ == "__main__":
         print("CUDA is not available. Training will use the CPU.")
     
     # Path to the dataset
-    dataset_path = "/AllTelemetryData/2022/all_drivers_AustralianGrandPrix_2022.csv"
+    dataset_path = "AllTelemetryData/2023_all_data.npz"
     
     # Load and preprocess data
     print("Loading and preprocessing data...")
