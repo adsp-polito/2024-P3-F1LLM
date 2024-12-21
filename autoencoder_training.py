@@ -1,9 +1,11 @@
+import time
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import Model   # type: ignore
-from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, Dense   # type: ignore
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
@@ -69,6 +71,30 @@ def map_grand_prix(df):
     return df, event_mapping
 
 
+def map_team(df):
+    """
+    Maps teams to unique numeric identifiers and removes the original 'Team' column.
+    
+    Args:
+        df (DataFrame): Input DataFrame containing the 'Team' column.
+    
+    Returns:
+        DataFrame: Updated DataFrame with the new column 'Team_mapped'.
+        dict: Mapping of events to their numeric identifiers.
+    """
+    # Create a sorted list of unique events
+    team_list = sorted(df['Team'].unique())  # Ensure consistent mapping order
+    team_mapping = {team: idx + 1 for idx, team in enumerate(team_list)}  # Map to integers
+
+    # Add the mapped column
+    df['Team_mapped'] = df['Team'].map(team_mapping).fillna(0).astype(int)
+    
+    # Drop the original 'Team' column
+    df = df.drop(columns=['Team'], errors='ignore')
+    
+    return df, team_mapping
+
+
 # Preprocess FastF1 data specifications
 def normalize_data(df):
     """
@@ -95,11 +121,14 @@ def normalize_data(df):
                   one-hot encoded categorical features, and unprocessed features.
     """
     
+    print('Preprocessing data...')
+    start_time = time.time()
+
     # List of time columns to convert
     time_columns = [
         'Time', 'LapTime', 'Sector1Time', 'Sector2Time', 'Sector3Time',
         'Sector1SessionTime', 'Sector2SessionTime', 'Sector3SessionTime',
-        'PitOutTime', 'PitInTime'
+        'PitOutTime', 'PitInTime', 'TimeXY'
     ]
 
     # Convert all time columns to seconds
@@ -107,14 +136,15 @@ def normalize_data(df):
         if col in df.columns:
             df[col] = df[col].apply(convert_time_to_seconds)
 
+    df['DriverAhead'] = df['DriverAhead'].apply(lambda x: x if pd.isna(x) else int(x))
+
     # Columns to normalize
     numerical_cols = [
         'Time', 'LapTime', 'Sector1Time', 'Sector2Time', 'Sector3Time',
         'Sector1SessionTime', 'Sector2SessionTime', 'Sector3SessionTime',
-        'Speedl1', 'Speedl2', 'SpeedFL', 'Speed', 'AirTemp', 'Humidity',
-        'Pressure', 'Rainfall', 'TrackTemp', 'WindDirection', 'WindSpeed',
-        'DistanceToDriverAhead', 'RPM', 'nGear', 'Throttle', 'Brake',
-        'DRS', 'X', 'Y', 'Z', 'Distance'
+        'Speed', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp',
+        'WindDirection', 'WindSpeed', 'DistanceToDriverAhead', 'RPM', 'nGear',
+        'Throttle', 'Brake', 'DRS', 'X', 'Y', 'Z', 'Distance'
     ]
 
     # THIS IS TEMPORARY: WE NEED TO MANAGE BETTER THE "OBJECT" TYPE
@@ -125,6 +155,11 @@ def normalize_data(df):
     if 'Compound' in df.columns:
         one_hot = pd.get_dummies(df['Compound'], prefix='Compound')
         df = pd.concat([df, one_hot], axis=1).drop(columns=['Compound'])
+    
+    # Map Team column to numeric identifiers
+    if 'Team' in df.columns:
+        df, team_mapping = map_team(df)
+        # print("Mapped Teams:", team_mapping)
 
     # Map Event column to numeric identifiers
     if 'Event' in df.columns:
@@ -135,13 +170,13 @@ def normalize_data(df):
     categorical_cols = ['TrackStatus']
 
     # Columns to leave unprocessed
-    non_normalized_cols = ['DriverNumber', 'Stint', 'LapNumber', 'Position', 'IsPersonalBest', 'Year', 'Event']
+    non_normalized_cols = ['DriverNumber', 'Stint', 'LapNumber', 'Position', 'IsPersonalBest', 'Year', 'Event', 'Team']
 
     # Columns to drop (irrelevant or redundant)
     drop_cols = [
-        'Driver', 'SpeedST', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate',
+        'Driver', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'TyreLife_x', 'FreshTyre', 'LapStartTime', 'LapStartDate',
         'Deleted', 'DeletedReason', 'FastF1Generated', 'isAccurate', 'Status', 'Date', 'SessionTime',
-        'RelativeDistance', 'Source', 'DriverAhead', 'Compound_y', 'TyreLife_y'
+        'RelativeDistance', 'Source', 'Compound_y', 'TyreLife_y', 'TimeXY'
     ]
 
     # Drop irrelevant columns if they exist in the dataset
@@ -157,6 +192,14 @@ def normalize_data(df):
         df['PitStopTime'] = (df['PitOutTime'] - df['PitInTime']).fillna(0).astype(float)
         df = df.drop(columns=['PitOutTime', 'PitInTime'], errors='ignore')
         numerical_cols.append('PitStopTime')
+
+    # Handle DistanceToDriverAhead
+    if 'Position' in df.columns:
+        df.loc[df['Position'] == 1, 'DistanceToDriverAhead'] = 0
+        df.loc[df['Position'] == 1, 'DriverAhead'] = 0
+
+    # if DriverAhead is null, drop row
+    df = df.dropna(subset=['DriverAhead'])
 
     # Preprocessing pipeline
     preprocessor = ColumnTransformer(
@@ -174,6 +217,10 @@ def normalize_data(df):
 
     # Apply transformations
     processed_data = preprocessor.fit_transform(df)
+
+    end_time = time.time()
+    elapsed_time = (end_time - start_time) / 60  # Convert to minutes
+    print(f"Preprocessing took {elapsed_time:.2f} minutes.")
     return processed_data
 
 
@@ -186,8 +233,72 @@ def load_and_preprocess_data(file_path):
     Returns:
         array: Preprocessed dataset ready for sequence modeling.
     """
+    dtype_dict = {
+            "DriverNumber": int,
+            "LapNumber": int,
+            "Stint": int,
+            "SpeedI1": float,
+            "SpeedI2": float,
+            "SpeedFL": float,
+            "SpeedST": float,
+            "IsPersonalBest": bool,
+            "Compound_x": str,
+            "Compound_y": str,
+            "TyreLife_x": int,
+            "TyreLife_y": int,
+            "FreshTyre": bool,
+            "Team": str,
+            "TrackStatus": int,
+            "Position": int,
+            "Deleted": bool,
+            "DeletedReason": str,
+            "FastF1Generated": bool,
+            "IsAccurate": bool,
+            "AirTemp": float,
+            "Humidity": float,
+            "Pressure": float,
+            "Rainfall": bool,
+            "TrackTemp": float,
+            "WindDirection": float,
+            "WindSpeed": float,
+            "DistanceToDriverAhead": float,
+            "RPM": int,
+            "Speed": int,
+            "nGear": int,
+            "Throttle": int,
+            "Brake": bool,
+            "DRS": int,
+            "Source": str,
+            "Distance": float,
+            "RelativeDistance": float,
+            "Status": str,
+            "X": int,
+            "Y": int,
+            "Z": int,
+            "Year": int,
+            "Event": str,
+            # Specify time columns as object
+            "PitInTime": object,
+            "PitOutTime": object,
+            "Sector1SessionTime": object,
+            "Sector1Time": object,
+            "Sector2SessionTime": object,
+            "Sector2Time": object,
+            "Sector3SessionTime": object,
+            "Sector3Time": object,
+            "LapStartTime": object,
+            "SessionTime": object,
+            "LapTime": object,
+            "TimeXY": object,
+            "LapStartDate": object,
+            "Date": object,
+    }
+
     # Load dataset
+    print(f'Loading dataset from {file_path}')
+    start_time = time.time()
     np_data = np.load(file_path, allow_pickle=True)
+    print(f'Loaded! Converting to dataframe...')
     data = pd.DataFrame(np_data['data'], columns=['Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
                                                   'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
                                                   'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
@@ -197,7 +308,12 @@ def load_and_preprocess_data(file_path):
                                                   'TrackTemp', 'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead',
                                                   'DistanceToDriverAhead', 'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS',
                                                   'Source', 'Distance', 'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'])
-    # data = pd.read_csv(file_path)
+    data = data.astype(dtype_dict)
+    print('Dataset loaded and converted to dataframe')
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f'Dataset loaded in: {elapsed_time:.2f} seconds')
+
     
     # Preprocess data
     processed_data = normalize_data(data)
@@ -236,8 +352,11 @@ def calculate_reconstruction_error(autoencoder, X_val):
     Returns:
         ndarray: Reconstruction error for each sample in the validation data.
     """
-    reconstructed_data = autoencoder.predict(X_val, verbose=0)
-    reconstruction_error = np.mean((X_val - reconstructed_data)**2, axis=(1, 2))
+    autoencoder.eval()
+    with torch.no_grad():
+        X_val = torch.tensor(X_val, dtype=torch.float32).to(next(autoencoder.parameters()).device)
+        reconstructed_data = autoencoder(X_val).cpu().numpy()
+    reconstruction_error = np.mean((X_val.cpu().numpy() - reconstructed_data)**2, axis=(1, 2))
     return reconstruction_error
 
 
@@ -258,7 +377,10 @@ def compare_reconstruction(autoencoder, X_val, num_samples):
     sample_data = X_val[:num_samples]
 
     # Get the reconstructed data
-    reconstructed_data = autoencoder.predict(sample_data)
+    autoencoder.eval()
+    with torch.no_grad():
+        sample_data_tensor = torch.tensor(sample_data, dtype=torch.float32).to(next(autoencoder.parameters()).device)
+        reconstructed_data = autoencoder(sample_data_tensor).cpu().numpy()
 
     # Loop over the samples and print a compact comparison
     for i in range(len(sample_data)):  # Use the actual number of samples in sample_data
@@ -314,159 +436,72 @@ def training_diagnostics(autoencoder, history, X_val, sequence_length, num_sampl
     compare_reconstruction(autoencoder, X_val, num_samples)
 
 
-def sliding_window_generator(data, sequence_length, batch_size):
-    """
-    Generates sliding windows dynamically for training and validation
-    Args:
-        data (array): Input data.
-        sequence_length (int): Number of timesteps in each sequence.
-        batch_size (int): Number of sequences per batch.
-    Yields:
-        tuple: Batch of sequences (X, X) for autoencoder training.
-    """
-    num_samples = len(data) - sequence_length + 1
-    while True:
-        for start_idx in range(0, num_samples, batch_size):
-            end_idx = min(start_idx + batch_size, num_samples)
-            batch_data = np.array([data[i:i+sequence_length] for i in range(start_idx, end_idx)])
-            # When the yield statement is executed, the generator state is frozen and the value of the expression_list 
-            # is returned to the next() call
-            yield batch_data, batch_data    
-            # the input and the label (X and y) are identical, typical for an autoencoder, since the model has to reconstruct the input data
+class FastF1Dataset(Dataset):
+    def __init__(self, data, sequence_length):
+        self.data = torch.tensor(data, dtype=torch.float32)
+        self.sequence_length = sequence_length
 
-def train_autoencoder(
-    autoencoder,
-    train_gen,
-    val_gen,
-    steps_per_epoch,
-    validation_steps,
-    epochs,
-    validation_freq,
-    other_metrics=["mae"],
-):
-    """
-    Trains the autoencoder using Keras' fit method with custom metrics and validation frequency.
+    def __len__(self):
+        return len(self.data) - self.sequence_length + 1
 
-    Args:
-        autoencoder (Model): The autoencoder model.
-        train_gen (generator): Generator for training data.
-        val_gen (generator): Generator for validation data.
-        steps_per_epoch (int): Number of steps (batches) per epoch for training.
-        validation_steps (int): Number of steps (batches) per epoch for validation.
-        epochs (int): Number of epochs to train.
-        validation_freq (int): Frequency (in epochs) for validation.
-        metrics (list): List of metrics to track during training.
-    
-    Returns:
-        History: Training history object returned by Keras fit.
-    """
+    def __getitem__(self, idx):
+        return self.data[idx:idx + self.sequence_length]
 
-    # Compile the model with custom metrics
-    autoencoder.compile(optimizer="adam", loss="mse", metrics=other_metrics)
+class LSTMAutoencoder(nn.Module):
+    def __init__(self, sequence_length, num_features):
+        super(LSTMAutoencoder, self).__init__()
+        self.encoder = nn.LSTM(num_features, 64, batch_first=True)
+        self.latent = nn.LSTM(64, 32, batch_first=True)
+        self.decoder = nn.LSTM(32, 64, batch_first=True)
+        self.output_layer = nn.Linear(64, num_features)
 
+    def forward(self, x):
+        x, _ = self.encoder(x)
+        x, _ = self.latent(x[:, -1].unsqueeze(1).repeat(1, x.size(1), 1))
+        x, _ = self.decoder(x)
+        x = self.output_layer(x)
+        return x
+
+
+def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device):
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(autoencoder.parameters(), lr=0.001)
     history = {"loss": [], "val_loss": []}
-    
+
     for epoch in range(1, epochs + 1):
-        print(f"\nEpoch {epoch}/{epochs}")
-        
-        # Determine if validation should be used this epoch
-        validate_this_epoch = (epoch) % validation_freq == 0 or (epoch) == epochs or (epoch) == 1
-        
-        # Train for the current epoch
-        epoch_history = autoencoder.fit(
-            train_gen,
-            steps_per_epoch=steps_per_epoch,
-            validation_data=val_gen if validate_this_epoch else None,
-            validation_steps=validation_steps if validate_this_epoch else 0,
-            verbose=1,
-        )
-
-        # Store training loss
-        history["loss"].append(epoch_history.history["loss"][-1])
-        
-        # Store metrics (only the ones you want to print like 'mae')
-        for metric in other_metrics:
-            history[metric] = history.get(metric, [])  # Ensure key exists in history
-            history[metric].append(epoch_history.history.get(metric, [None])[-1])  # Safe retrieval
-
-        # Store validation loss and metrics if validation was performed
-        if "val_loss" in epoch_history.history:
-            history["val_loss"].append(epoch_history.history["val_loss"][-1])
-            print(f"Epoch ({epoch}): Validation MSE -> {history['val_loss'][-1]:.4f}")
+        autoencoder.train()
+        train_loss = 0
+        for batch in tqdm(train_loader, desc=f"Epoch {epoch}/{epochs}"):
+            batch = batch.to(device)
+            optimizer.zero_grad()
+            outputs = autoencoder(batch)
+            loss = criterion(outputs, batch)
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item()
             
-            # Print validation metrics (only the ones in 'metrics' list)
-            for metric in other_metrics:
-                val_metric = f"val_{metric}"
-                if val_metric in epoch_history.history:
-                    print(f"Epoch ({epoch}): Validation {metric.upper()} -> {epoch_history.history[val_metric][-1]:.4f}")
+
+        train_loss /= len(train_loader)
+        history["loss"].append(train_loss)
+
+        if epoch % validation_freq == 0 or epoch == epochs or epoch == 1:
+            autoencoder.eval()
+            val_loss = 0
+            with torch.no_grad():
+                for batch in val_loader:
+                    batch = batch.to(device)
+                    outputs = autoencoder(batch)
+                    loss = criterion(outputs, batch)
+                    val_loss += loss.item()
+
+            val_loss /= len(val_loader)
+            history["val_loss"].append(val_loss)
+            print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
         else:
             history["val_loss"].append(None)
-            print(f"Epoch {epoch}: Validation skipped.")
-    
+            print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Validation skipped.")
+
     return history
-
-
-# Function to create the LSTM autoencoder model
-def build_autoencoder(sequence_length, num_features, other_metrics):
-
-    """
-    Builds an LSTM autoencoder for sequence data.
-    Args:
-        sequence_length (int): Number of timesteps in each sequence.
-        num_features (int): Number of features per timestep.
-    Returns:
-        Model: Compiled LSTM autoencoder model.
-
-    LSTM Autoencoder Architecture
-
-    The model is designed to process sequential data (e.g., time-series or telemetry data) using an encoder-decoder structure:
-
-    Encoder:
-    - Extracts temporal dependencies in the input sequence.
-    - Gradually compresses the input into a single latent vector, which summarizes the entire sequence.
-
-    Latent Space:
-    - Acts as a bottleneck, forcing the model to focus on essential patterns in the data.
-    - Discards noise and redundant information.
-
-    Decoder:
-    - Reconstructs the original sequence step-by-step from the latent vector.
-    - Expands the latent representation back to the original sequence shape.
-
-    Objective:
-    - The model is trained to minimize reconstruction error (Mean Squared Error, MSE) between the input sequence and the reconstructed sequence.
-    - High reconstruction error on unseen data indicates anomalies or deviations from learned patterns.
-    """
-
-    # Input layer
-    # Accepts a sequential input of shape (timesteps, features)
-    input_layer = Input(shape=(sequence_length, num_features))
-    
-    # Encoder
-    # Extracts temporal dependencies and outputs intermediate representations
-    encoded = LSTM(64, activation='relu', return_sequences=True)(input_layer)
-    # Compresses the sequence into a single latent vector summarizing the input
-    encoded = LSTM(32, activation='relu', return_sequences=False)(encoded)
-
-    # Latent Space
-    # Repeats the latent vector for each timestep to initialize the decoder
-    latent_space = RepeatVector(sequence_length)(encoded)
-
-    # Decoder
-    # Begins reconstructing the sequence step-by-step
-    decoded = LSTM(32, activation='relu', return_sequences=True)(latent_space)
-    # Expands the sequence to match the original complexity
-    decoded = LSTM(64, activation='relu', return_sequences=True)(decoded)
-    
-    # Reconstructs the sequence to have the same features as the input
-    output_layer = TimeDistributed(Dense(num_features))(decoded)
-    
-    # Define the autoencoder
-    # Optimizes the model to minimize reconstruction error (MSE)
-    autoencoder = Model(inputs=input_layer, outputs=output_layer)
-    autoencoder.compile(optimizer="adam", loss="mse", metrics = other_metrics)
-
-    return autoencoder
 
 
 # Main function
@@ -480,9 +515,9 @@ if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
 
     # Check for CUDA/GPU availability
-    if tf.config.list_physical_devices('GPU'):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
         print("CUDA is available. Training will use the GPU.")
-        print("Available GPU(s):", tf.config.list_physical_devices('GPU'))
     else:
         print("CUDA is not available. Training will use the CPU.")
     
@@ -490,7 +525,6 @@ if __name__ == "__main__":
     dataset_path = "AllTelemetryData/2023_all_data.npz"
     
     # Load and preprocess data
-    print("Loading and preprocessing data...")
     data = load_and_preprocess_data(dataset_path)
 
     # Split data into training and validation sets
@@ -499,38 +533,27 @@ if __name__ == "__main__":
     
     # Parametri
     sequence_length = 10
-    batch_size = 32
-    epochs = 1
+    batch_size = 128
+    epochs = 10
     validation_freq = 5
-    other_metrics = ["mae"]         # MSE is the standard loss => there is no the need to specify it
 
     # Build the autoencoder
-    autoencoder = build_autoencoder(sequence_length, num_features, other_metrics)
-    autoencoder.summary()
+    autoencoder = LSTMAutoencoder(sequence_length, num_features).to(device)
+    print(autoencoder)
 
-    # Create generators
-    train_gen = sliding_window_generator(train_data, sequence_length, batch_size)
-    val_gen = sliding_window_generator(val_data, sequence_length, batch_size)
+    # Create datasets and loaders
+    train_dataset = FastF1Dataset(train_data, sequence_length)
+    val_dataset = FastF1Dataset(val_data, sequence_length)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     # Train the autoencoder
-    steps_per_epoch = (len(train_data) - sequence_length + 1) // batch_size
-    validation_steps = (len(val_data) - sequence_length + 1) // batch_size
-
-    history = train_autoencoder(
-        autoencoder,
-        train_gen,
-        val_gen,
-        steps_per_epoch,
-        validation_steps,
-        epochs,
-        validation_freq,
-        other_metrics=other_metrics,  # Personalized Metrics
-    )
+    history = train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device)
 
     # Call diagnostics
     training_diagnostics(autoencoder, history, val_data, sequence_length)
     
     # Save the trained model
     print("Saving the trained model...")
-    autoencoder.save("autoencoder_fastf1.keras")
-    print("Model saved as 'autoencoder_fastf1.keras'")
+    torch.save(autoencoder.state_dict(), "autoencoder_fastf1.pth")
+    print("Model saved as 'autoencoder_fastf1.pth'")
