@@ -2,6 +2,7 @@
 cache
 .idea
 AllTelemetryData
+AllTelemetryData_conc_NP
 
 ._*
 .AppleDouble
@@ -12,3 +13,7 @@ __pycache__
 test.py
 .idea
 debug.ipynb
+
+AD_normalized
+test.ipynb
+
