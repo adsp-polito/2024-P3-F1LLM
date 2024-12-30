@@ -2,6 +2,9 @@ import time
 import joblib
 import numpy as np
 
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -13,7 +16,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
-import os
 
 
 # Updated function to load and preprocess data
@@ -29,9 +31,10 @@ def load_data(folder_path):
     # Load dataset
     print(f'Loading dataset from {folder_path}...')
     all_data = []
+    counter = 0
     start_time = time.time()
     for file in os.listdir(folder_path):
-        if file.endswith('.npz') and file.startswith('2019'):
+        if file.endswith('.npz') and counter < 5: # and file.startswith('2019'):
             print(f'Loading {file}...')
             stime = time.time()
             file_path = os.path.join(folder_path, file)
@@ -40,6 +43,7 @@ def load_data(folder_path):
             all_data.append(np_data)
             etime = time.time()
             print(f'Done in {etime - stime:.2f} seconds')
+            counter += 1
     
     print(f'Concatenating data...')
     np_data = np.concatenate(all_data, axis=0)
@@ -249,6 +253,15 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
             history["val_loss"].append(None)
             print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Validation skipped.")
 
+        # Libera la memoria non utilizzata
+        torch.cuda.empty_cache()
+        print(torch.cuda.memory_summary(device=None, abbreviated=True))
+
+        # Save the trained model
+        print("Saving the trained model...")
+        torch.save(autoencoder.state_dict(), f"saved_models/_AD_autoencoder_ep{epoch}_loss{train_loss:.4f}.pth")
+        print("Model saved.")
+        
     return history
 
 
@@ -295,7 +308,7 @@ if __name__ == "__main__":
         print("CUDA is not available. Training will use the CPU.")
     
     # Path to the dataset
-    dataset_path = "AD_supernormalized"
+    dataset_path = "AD_normalized"
     
     # Load and preprocess data
     data = load_data(dataset_path)
@@ -315,8 +328,8 @@ if __name__ == "__main__":
     batch_size = 128
     epochs = 10
     validation_freq = 5
-    learning_rate = 0.001
-    criterion = nn.L1Loss() # MAE loss
+    learning_rate = 0.00001
+    criterion = nn.L1Loss()
 
     # Build the autoencoder
     autoencoder = LSTMAutoencoder(sequence_length, num_features).to(device)
@@ -326,15 +339,15 @@ if __name__ == "__main__":
     train_dataset = FastF1Dataset(train_data, sequence_length)
     val_dataset = FastF1Dataset(val_data, sequence_length)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
 
     # Train the autoencoder
     history = train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion)
-
-    # Step 4: Calculate reconstruction error for training set
+    
+    # Calculate reconstruction error for training set
     train_reconstruction_error = calculate_reconstruction_error(autoencoder, train_data)
 
-    # Step 4.1: Determine anomaly threshold based on the training reconstruction errors
+    # Determine anomaly threshold based on the training reconstruction errors
     anomaly_threshold = determine_threshold(train_reconstruction_error, percentile=95)
     print(f"Anomaly Threshold (95th Percentile): {anomaly_threshold:.4f}")
 
@@ -348,7 +361,4 @@ if __name__ == "__main__":
     # Call diagnostics
     training_diagnostics(autoencoder, history, val_data, sequence_length)
     
-    # Save the trained model
-    print("Saving the trained model...")
-    torch.save(autoencoder.state_dict(), "autoencoder_fastf1.pth")
-    print("Model saved as 'autoencoder_fastf1.pth'")
+    
