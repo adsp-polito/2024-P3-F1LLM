@@ -14,7 +14,7 @@ from torch.amp import GradScaler
 import matplotlib.pyplot as plt
 
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold, train_test_split
 from tqdm import tqdm
 
 
@@ -31,10 +31,9 @@ def load_data(folder_path):
     # Load dataset
     print(f'Loading dataset from {folder_path}...')
     all_data = []
-    counter = 0
     start_time = time.time()
     for file in os.listdir(folder_path):
-        if file.endswith('.npz') and counter < 5: # and file.startswith('2019'):
+        if file.endswith('.npz') and not file.startswith('2024'):
             print(f'Loading {file}...')
             stime = time.time()
             file_path = os.path.join(folder_path, file)
@@ -43,7 +42,6 @@ def load_data(folder_path):
             all_data.append(np_data)
             etime = time.time()
             print(f'Done in {etime - stime:.2f} seconds')
-            counter += 1
     
     print(f'Concatenating data...')
     np_data = np.concatenate(all_data, axis=0)
@@ -89,23 +87,36 @@ def determine_threshold(reconstruction_errors, percentile=95):
     """
     return np.percentile(reconstruction_errors, percentile)
 
-def calculate_reconstruction_error(autoencoder, X_val):
+def calculate_reconstruction_error(autoencoder, X_val, batch_size=128):
     """
-    Calculates reconstruction error for validation data.
-    
+    Calculates reconstruction error for validation data in batches.
+
     Args:
-        autoencoder (Model): The trained autoencoder.
-        X_val (ndarray): Validation data (3D array with shape [samples, sequence_length, features]).
-    
+        autoencoder (Model): Trained autoencoder.
+        X_val (ndarray): Validation data (3D array: [samples, sequence_length, features]).
+        batch_size (int): Number of samples to process at once.
+
     Returns:
-        ndarray: Reconstruction error for each sample in the validation data.
+        ndarray: Reconstruction error for each sample.
     """
     autoencoder.eval()
+    reconstruction_errors = []
+
+    # Process the data in batches
     with torch.no_grad():
-        X_val = torch.tensor(X_val, dtype=torch.float32).to(next(autoencoder.parameters()).device)
-        reconstructed_data = autoencoder(X_val).cpu().numpy()
-    reconstruction_error = np.mean((X_val.cpu().numpy() - reconstructed_data)**2, axis=(1, 2))
-    return reconstruction_error
+        for i in range(0, len(X_val), batch_size):
+            # Get a batch
+            batch = X_val[i : i + batch_size]
+            batch_tensor = torch.tensor(batch, dtype=torch.float32).to(next(autoencoder.parameters()).device)
+
+            # Predict and calculate reconstruction
+            reconstructed_batch = autoencoder(batch_tensor).cpu().numpy()
+            batch_errors = np.mean((batch - reconstructed_batch) ** 2, axis=(1, 2))
+
+            # Store errors
+            reconstruction_errors.extend(batch_errors)
+
+    return np.array(reconstruction_errors)
 
 
 def compare_reconstruction(autoencoder, X_val, num_samples):
@@ -178,13 +189,25 @@ def training_diagnostics(autoencoder, history, X_val, sequence_length, num_sampl
         print("Validation Loss: Not available (validation skipped for some epochs).")
     
     # Calculate mean reconstruction error
-    print("\nReconstruction Error Analysis:")
-    reconstruction_error = calculate_reconstruction_error(autoencoder, X_val)
-    print(f"Mean Reconstruction Error (Validation Data): {np.mean(reconstruction_error):.4f}")
+    # print("\nReconstruction Error Analysis:")
+    # reconstruction_error = calculate_reconstruction_error(autoencoder, X_val)
+
+    # # Determine anomaly threshold based on the training reconstruction errors
+    # anomaly_threshold = determine_threshold(reconstruction_error, percentile=95)
+    # print(f"Anomaly Threshold (95th Percentile): {anomaly_threshold:.4f}")
     
-    # Display reconstruction comparison for selected samples
-    print("\n--- Reconstruction Comparison ---\n")
-    compare_reconstruction(autoencoder, X_val, num_samples)
+    # print(f"Mean Reconstruction Error (Validation Data): {np.mean(reconstruction_error):.4f}")
+
+    # Test and Evaluate
+    # X_test, y_test = val_data[:, :-1], val_data[:, -1]
+    # metrics = evaluate_model(autoencoder, X_test, y_test, anomaly_threshold, reconstruction_error)
+    # print("Performance Metrics:")
+    # for metric, value in metrics.items():
+    #     print(f"{metric}: {value:.4f}")
+    
+    # # Display reconstruction comparison for selected samples
+    # print("\n--- Reconstruction Comparison ---\n")
+    # compare_reconstruction(autoencoder, X_val, num_samples)
 
 
 class FastF1Dataset(Dataset):
@@ -214,9 +237,15 @@ class LSTMAutoencoder(nn.Module):
         return x
 
 
-def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion):
+def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion, optimizer_name='Adam'):
     scaler = GradScaler('cuda')
-    optimizer = optim.Adam(autoencoder.parameters(), lr=learning_rate)
+    if optimizer_name == 'Adam':
+        optimizer = optim.Adam(autoencoder.parameters(), lr=learning_rate)
+    elif optimizer_name == 'AdamW':
+        optimizer = optim.AdamW(autoencoder.parameters(), lr=learning_rate)
+    elif optimizer_name == 'SGD':
+        optimizer = optim.SGD(autoencoder.parameters(), lr=learning_rate, momentum=0.9)
+
     history = {"loss": [], "val_loss": []}
 
     for epoch in range(1, epochs + 1):
@@ -259,106 +288,127 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
 
         # Save the trained model
         print("Saving the trained model...")
-        torch.save(autoencoder.state_dict(), f"saved_models/_AD_autoencoder_ep{epoch}_loss{train_loss:.4f}.pth")
+        learning_rate_str = str(learning_rate).split(".")[1]
+        torch.save(autoencoder.state_dict(), f"saved_models/kfold_models/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
         print("Model saved.")
         
     return history
 
 
-def evaluate_model(autoencoder, X_test, y_test, threshold):
+# def evaluate_model(autoencoder, X_test, y_test, threshold, reconstruction_error):
+#     """
+#     Evaluates the anomaly detection performance of the autoencoder.
+    
+#     Args:
+#         autoencoder (Model): Trained autoencoder.
+#         X_test (ndarray): Test data.
+#         y_test (ndarray): Ground truth labels (1 for anomaly, 0 for normal).
+#         threshold (float): Anomaly detection threshold.
+    
+#     Returns:
+#         dict: Precision, Recall, F1 Score, and AUC.
+#     """
+#     predictions = (reconstruction_error > threshold).astype(int)
+    
+#     metrics = {
+#         "Precision": precision_score(y_test, predictions),
+#         "Recall": recall_score(y_test, predictions),
+#         "F1 Score": f1_score(y_test, predictions),
+#         "AUC": roc_auc_score(y_test, reconstruction_error),
+#     }
+#     return metrics
+
+def cross_validate_autoencoder(autoencoder_class, data, k_folds, sequence_length, batch_size, epochs, 
+                               validation_freq, device, learning_rate, criterion, optimizer_name):
     """
-    Evaluates the anomaly detection performance of the autoencoder.
+    Performs k-fold cross-validation for the LSTM Autoencoder.
     
     Args:
-        autoencoder (Model): Trained autoencoder.
-        X_test (ndarray): Test data.
-        y_test (ndarray): Ground truth labels (1 for anomaly, 0 for normal).
-        threshold (float): Anomaly detection threshold.
+        autoencoder_class (class): Class of the autoencoder model.
+        data (ndarray): Full dataset to split into folds.
+        k_folds (int): Number of folds for cross-validation.
+        sequence_length (int): Sequence length for the model.
+        batch_size (int): Batch size for training.
+        epochs (int): Number of epochs to train for each fold.
+        validation_freq (int): Frequency of validation.
+        device (torch.device): Device to use for training.
+        learning_rate (float): Learning rate for the optimizer.
+        criterion (loss): Loss function.
+        optimizer_name (str): Optimizer to use ("Adam", "AdamW", etc.).
     
     Returns:
-        dict: Precision, Recall, F1 Score, and AUC.
+        list: Training histories for each fold.
     """
-    reconstruction_error = calculate_reconstruction_error(autoencoder, X_test)
-    predictions = (reconstruction_error > threshold).astype(int)
-    
-    metrics = {
-        "Precision": precision_score(y_test, predictions),
-        "Recall": recall_score(y_test, predictions),
-        "F1 Score": f1_score(y_test, predictions),
-        "AUC": roc_auc_score(y_test, reconstruction_error),
-    }
-    return metrics
+    kfold = KFold(n_splits=k_folds, shuffle=True, random_state=42)
+    histories = []
 
+    for fold, (train_indices, val_indices) in enumerate(kfold.split(data)):
+        print(f"\n--- Fold {fold + 1}/{k_folds} ---\n")
+        
+        # Split the data
+        train_data = data[train_indices]
+        val_data = data[val_indices]
+        
+        # Create datasets and loaders
+        train_dataset = FastF1Dataset(train_data, sequence_length)
+        val_dataset = FastF1Dataset(val_data, sequence_length)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+        
+        # Initialize a new autoencoder for each fold
+        autoencoder = autoencoder_class(sequence_length, data.shape[1]).to(device)
+        
+        # Train the autoencoder on the current fold
+        history = train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, 
+                                    device, learning_rate, criterion, optimizer_name)
+        
+        # Store the training history
+        histories.append(history)
+
+        learning_rate_str = str(learning_rate).split(".")[1]
+
+        # Optionally, save the model for each fold
+        torch.save(autoencoder.state_dict(), f"saved_models/kfold_models/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_loss{history['loss'][-1]:.4f}_fold{fold + 1}.pth")
+        print(f"Model for fold {fold + 1} saved.")
+    
+    return histories
 
 # Main function
 if __name__ == "__main__":
-
-    """
-    Main execution function to train the LSTM autoencoder on FastF1 data
-    """
-
-    # clear the output
+    # Clear the output
     os.system('cls' if os.name == 'nt' else 'clear')
 
     # Check for CUDA/GPU availability
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if torch.cuda.is_available():
-        print("CUDA is available. Training will use the GPU.")
-    else:
-        print("CUDA is not available. Training will use the CPU.")
-    
+    print(f"Device: {device}")
+
     # Path to the dataset
-    dataset_path = "AD_normalized"
-    
+    dataset_path = "AD_noFailures_normalized/MinMaxScaler"
+
     # Load and preprocess data
     data = load_data(dataset_path)
 
-    # Split data into training and validation sets
-    train_data, val_data = train_test_split(data, test_size=0.2, random_state=42)
-    num_features = data.shape[1]
+    # Check for NaNs or infinite values
+    print("Any NaNs in dataset:", np.isnan(data).any())
+    print("Any Infs in dataset:", np.isinf(data).any())
 
-    print("Any NaNs in training data:", np.isnan(train_data).any())
-    print("Any NaNs in validation data:", np.isnan(val_data).any())
-    print("Any Infs in training data:", np.isinf(train_data).any())
-    print("Any Infs in validation data:", np.isinf(val_data).any())
-
-    
-    # Parametri
+    # Parameters
     sequence_length = 20
     batch_size = 128
     epochs = 10
     validation_freq = 5
-    learning_rate = 0.00001
+    learning_rate = 0.0001
+    optimizer_name = 'AdamW'
     criterion = nn.L1Loss()
+    k_folds = 5  # Number of cross-validation folds
 
-    # Build the autoencoder
-    autoencoder = LSTMAutoencoder(sequence_length, num_features).to(device)
-    print(autoencoder)
-
-    # Create datasets and loaders
-    train_dataset = FastF1Dataset(train_data, sequence_length)
-    val_dataset = FastF1Dataset(val_data, sequence_length)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
-
-    # Train the autoencoder
-    history = train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion)
+    # Run k-fold cross-validation
+    histories = cross_validate_autoencoder(LSTMAutoencoder, data, k_folds, sequence_length, 
+                                           batch_size, epochs, validation_freq, device, 
+                                           learning_rate, criterion, optimizer_name)
     
-    # Calculate reconstruction error for training set
-    train_reconstruction_error = calculate_reconstruction_error(autoencoder, train_data)
-
-    # Determine anomaly threshold based on the training reconstruction errors
-    anomaly_threshold = determine_threshold(train_reconstruction_error, percentile=95)
-    print(f"Anomaly Threshold (95th Percentile): {anomaly_threshold:.4f}")
-
-    # Step 5: Test and Evaluate
-    # Assuming 'X_test' and 'y_test' are your test features and labels
-    metrics = evaluate_model(autoencoder, X_test, y_test, anomaly_threshold)
-    print("Performance Metrics:")
-    for metric, value in metrics.items():
-        print(f"{metric}: {value:.4f}")
-
-    # Call diagnostics
-    training_diagnostics(autoencoder, history, val_data, sequence_length)
-    
+    # Plot training histories for each fold
+    # for fold, history in enumerate(histories):
+    #     print(f"\n--- Diagnostics for Fold {fold + 1} ---\n")
+    #     training_diagnostics(None, history, None, sequence_length)  # Replace None
     
