@@ -1,15 +1,16 @@
 import numpy as np
 import pandas as pd
-from data_extraction_and_preprocessing.normalize_npz import Normalizer
+from ..data_extraction_and_preprocessing.normalize_npz import Normalizer
 import os
 
-def extract_last_3_laps(npz_file_path):
+def extract_last_3_laps(npz_file_path, train=True):
     """
     Extracts the last 3 laps for each driver from a .npz file.
-    Skips files from 2024 and those where no data is present.
+    Filters files based on the year: skips 2024 in train mode, processes only 2024 in non-train mode.
 
     Args:
         npz_file_path (str): Path to the .npz file.
+        train (bool): Flag to indicate if the function is in train mode.
     
     Returns:
         pd.DataFrame or None: Filtered DataFrame with the last 3 laps for each driver, 
@@ -18,10 +19,17 @@ def extract_last_3_laps(npz_file_path):
     # Load the data from the .npz file
     data = np.load(npz_file_path, allow_pickle=True)["data"]
 
-    # Skip files from the 2024 season
-    if npz_file_path.split('/')[-1].startswith('2024'):
-        print(f"Skipping file from 2024 season: {npz_file_path}")
-        return None
+    # Handle train and non-train conditions
+    if train:
+        # Skip files from the 2024 season
+        if npz_file_path.split('/')[-1].startswith('2024'):
+            print(f"Skipping file from 2024 season: {npz_file_path}")
+            return None
+    else:
+        # Process only files from the 2024 season
+        if not npz_file_path.split('/')[-1].startswith('2024'):
+            print(f"Skipping file not from 2024 season: {npz_file_path}")
+            return None
 
     # If the dataset is empty, print a message and skip
     if data.shape[0] == 0:
@@ -44,9 +52,6 @@ def extract_last_3_laps(npz_file_path):
     # Create a DataFrame from the loaded data
     df = pd.DataFrame(data, columns=columns)
 
-    # Sort the DataFrame by Driver and LapNumber to ensure correct ordering
-    df_sorted = df.sort_values(by=['Driver', 'LapNumber'])
-
     # Find the last three laps using LapNumber
     unique_lap_numbers = sorted(df['LapNumber'].unique(), reverse=True)  # Get unique lap numbers in descending order
     last_3_laps_numbers = unique_lap_numbers[:3]  # Select the last 3 lap numbers
@@ -57,9 +62,9 @@ def extract_last_3_laps(npz_file_path):
     # Add the failure column
     failure = npz_file_path.split('_')[4].split(".")[0]
     last_3_laps['Failure'] = failure
-    # print(last_3_laps)
 
     return last_3_laps
+
 
 # main
 if __name__ == "__main__":
@@ -77,10 +82,13 @@ if __name__ == "__main__":
 
     final_failure = []
 
+    # Set train or test mode
+    train_mode = False  # Set to False for test mode
+
     # Process each file
     for file_path in all_files:
         print(f"Processing {file_path.split('/')[3]}...")
-        last_3_laps = extract_last_3_laps(file_path)
+        last_3_laps = extract_last_3_laps(file_path, train=train_mode)
         if last_3_laps is not None:  # Only append valid results
             final_failure.append(last_3_laps)
 
@@ -90,5 +98,10 @@ if __name__ == "__main__":
     # Normalize the data
     normClass = Normalizer(pit_stops=True)
     norm_final_failure = normClass.normalize_data(final_failure_df)
-    np.savez_compressed(
-        f'../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized.npz', data=norm_final_failure)
+
+    # Save the dataset based on the mode (train or test)
+    dataset_type = "train" if train_mode else "test"
+    output_file = f'../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_{dataset_type}.npz'
+    np.savez_compressed(output_file, data=norm_final_failure)
+
+    print(f"Dataset saved as: {output_file}")
