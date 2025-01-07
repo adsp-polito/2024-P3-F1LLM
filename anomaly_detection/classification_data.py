@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from ..data_extraction_and_preprocessing.normalize_npz import Normalizer
+from data_extraction_and_preprocessing.normalize_npz import Normalizer
 import os
 
 def extract_last_3_laps(npz_file_path, train=True):
@@ -16,20 +16,20 @@ def extract_last_3_laps(npz_file_path, train=True):
         pd.DataFrame or None: Filtered DataFrame with the last 3 laps for each driver, 
                               or None if the file is skipped or has no data.
     """
-    # Load the data from the .npz file
-    data = np.load(npz_file_path, allow_pickle=True)["data"]
 
     # Handle train and non-train conditions
-    if train:
-        # Skip files from the 2024 season
-        if npz_file_path.split('/')[-1].startswith('2024'):
-            print(f"Skipping file from 2024 season: {npz_file_path}")
-            return None
-    else:
-        # Process only files from the 2024 season
-        if not npz_file_path.split('/')[-1].startswith('2024'):
-            print(f"Skipping file not from 2024 season: {npz_file_path}")
-            return None
+    is_2024 = npz_file_path.split('/')[-1].split('\\')[1].startswith('2024')
+
+    if train and is_2024:
+        print(f"Skipping file from 2024 season: {npz_file_path}")
+        return None
+    elif not train and not is_2024:
+        print(f"Skipping file not from 2024 season: {npz_file_path}")
+        return None
+
+    # Load the data from the .npz file
+    print(f"Processing {file_path.split('/')[3]}...")
+    data = np.load(npz_file_path, allow_pickle=True)["data"]
 
     # If the dataset is empty, print a message and skip
     if data.shape[0] == 0:
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # Process each file
     for file_path in all_files:
-        print(f"Processing {file_path.split('/')[3]}...")
+
         last_3_laps = extract_last_3_laps(file_path, train=train_mode)
         if last_3_laps is not None:  # Only append valid results
             final_failure.append(last_3_laps)
