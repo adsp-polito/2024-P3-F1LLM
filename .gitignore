@@ -19,5 +19,6 @@ test.ipynb
 
 saved_models
 
-*.npz
+anomaly_detection/*.npz
 *.pth
+Dataset/OnlyFailuresByDriver/npz_failures/*.npz

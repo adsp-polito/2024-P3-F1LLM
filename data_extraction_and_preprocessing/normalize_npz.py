@@ -7,9 +7,9 @@ import os
 
 
 class Normalizer:
-    def __init__(self, scaler="MinMaxScaler"):
+    def __init__(self, scaler="MinMaxScaler", pit_stops=False):
         self.scaler_type = scaler
-        self.preprocessor = None
+        self.pit_stops = pit_stops
 
     def convert_time_to_seconds(self, df, col):
         """
@@ -123,6 +123,16 @@ class Normalizer:
                 12: 3,
                 13: 3,
                 14: 3
+            },
+            'Failure':{
+                'Others': 0,
+                'Braking System': 1,
+                'Engine': 2,
+                'Power Unit': 3,
+                'Cooling System': 4,
+                'Suspension and Drive': 5,
+                'Aerodynamics and Tyres': 6,
+                'Transmission and Gearbox': 7,
             }
         }
 
@@ -135,13 +145,15 @@ class Normalizer:
         df['Event'] = df['Event'].map(map_dict['Event'])
         df['Compound'] = df['Compound'].map(map_dict['Compound'])
         df['DRS'] = df['DRS'].map(map_dict['DRS'])
+        if 'Failure' in df.columns:
+            df['Failure'] = df['Failure'].map(map_dict['Failure'])
         
         df = df.dropna(subset=['DRS'])
 
         return df
 
 
-    def normalize_data(self, df, scaler):
+    def normalize_data(self, df):
         """
         Features are handled as follows:
         1. Numerical features: Standardized using `StandardScaler` to ensure all values are on the same scale.
@@ -243,17 +255,18 @@ class Normalizer:
         # print(f'Dataframe shape before removing all pit stops: {df.shape}')
 
         # Compute the set of pit stops for each driver
-        driver_pit_laps = {
-        driver: set(df[(df['DriverNumber'] == driver) & (df['PitInTime_in_ms'].notna())]['LapNumber'])
-        .union(df[(df['DriverNumber'] == driver) & (df['PitOutTime_in_ms'].notna())]['LapNumber'])
-        for driver in df['DriverNumber'].unique()
-        }
+        if not self.pit_stops:
+            driver_pit_laps = {
+            driver: set(df[(df['DriverNumber'] == driver) & (df['PitInTime_in_ms'].notna())]['LapNumber'])
+            .union(df[(df['DriverNumber'] == driver) & (df['PitOutTime_in_ms'].notna())]['LapNumber'])
+            for driver in df['DriverNumber'].unique()
+            }
 
-        # Filter dataset using the precomputed mapping
-        df = df[~df.apply(
-        lambda row: row['LapNumber'] in driver_pit_laps[row['DriverNumber']],
-        axis=1
-        )]
+            # Filter dataset using the precomputed mapping
+            df = df[~df.apply(
+            lambda row: row['LapNumber'] in driver_pit_laps[row['DriverNumber']],
+            axis=1
+            )]
 
         # print(f'Total number of laps after removing all pit stops: {df["LapNumber"].nunique()}')
         # print(f'Dataframe shape after removing all pit stops: {df.shape}')
@@ -313,14 +326,14 @@ class Normalizer:
         # df = df[~df['LapNumber'].isin([1, 2])]
 
         # Preprocessing pipeline
-        if scaler == 'StandardScaler':
+        if self.scaler_type == 'StandardScaler':
             preprocessor = ColumnTransformer(
                 transformers=[
                     ('num', StandardScaler(), numerical_cols),  # Standardize numerical features
                 ],
                 remainder='passthrough'  # Retain non-normalized features as-is
             )
-        elif scaler == 'MinMaxScaler':
+        elif self.scaler_type == 'MinMaxScaler':
             preprocessor = ColumnTransformer(
                 transformers=[
                     ('num', MinMaxScaler(), numerical_cols),  # Normalize numerical features
@@ -343,94 +356,95 @@ class Normalizer:
         print(f"Preprocessing took {elapsed_time:.2f} minutes.")
         return processed_data
 
+if "__name__" == "__main__":
+    all_columns=[
+        'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
+        'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
+        'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
+        'Compound_x', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate', 'TrackStatus',
+        'Position', 'Deleted', 'DeletedReason', 'FastF1Generated', 'IsAccurate', 'Compound_y',
+        'TyreLife_y', 'TimeXY', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp',
+        'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead',
+        'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance',
+        'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
+    ]
 
-all_columns=[
-    'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
-    'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
-    'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
-    'Compound_x', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate', 'TrackStatus',
-    'Position', 'Deleted', 'DeletedReason', 'FastF1Generated', 'IsAccurate', 'Compound_y',
-    'TyreLife_y', 'TimeXY', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp',
-    'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead',
-    'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance',
-    'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
-]
+    dtype_dict = {
+                "Driver": 'category',
+                "DriverNumber": 'category',
+                "LapNumber": 'int8',
+                "Compound_x": 'category',
+                "Compound_y": 'category',
+                "TyreLife_x": 'int8',
+                "TyreLife_y": 'int8',
+                "Team": 'category',
+                "TrackStatus": 'category',
+                "Position": 'int8',
+                "AirTemp": 'float16',
+                "Humidity": 'float16',
+                "Pressure": 'float16',
+                "Rainfall": bool,
+                "TrackTemp": 'float16',
+                "WindDirection": 'float16',
+                "WindSpeed": 'float16',
+                "DistanceToDriverAhead": 'float32',
+                "RPM": 'int16',
+                "Speed": 'int16',
+                "nGear": 'int8',
+                "Throttle": 'int8',
+                "Brake": bool,
+                "DRS": 'int8',
+                "Distance": 'float32',
+                "X": 'float32',
+                "Y": 'float32',
+                "Z": 'float32',
+                "Event": 'category',
 
-dtype_dict = {
-            "Driver": 'category',
-            "DriverNumber": 'category',
-            "LapNumber": 'int8',
-            "Compound_x": 'category',
-            "Compound_y": 'category',
-            "TyreLife_x": 'int8',
-            "TyreLife_y": 'int8',
-            "Team": 'category',
-            "TrackStatus": 'category',
-            "Position": 'int8',
-            "AirTemp": 'float16',
-            "Humidity": 'float16',
-            "Pressure": 'float16',
-            "Rainfall": bool,
-            "TrackTemp": 'float16',
-            "WindDirection": 'float16',
-            "WindSpeed": 'float16',
-            "DistanceToDriverAhead": 'float32',
-            "RPM": 'int16',
-            "Speed": 'int16',
-            "nGear": 'int8',
-            "Throttle": 'int8',
-            "Brake": bool,
-            "DRS": 'int8',
-            "Distance": 'float32',
-            "X": 'float32',
-            "Y": 'float32',
-            "Z": 'float32',
-            "Event": 'category',
+                'PitOutTime': object,
+                'PitInTime': object,
+                "LapTime": object,
+                "Time": object,
 
-            'PitOutTime': object,
-            'PitInTime': object,
-            "LapTime": object,
-            "Time": object,
+                'IsPersonalBest': bool,
+                'FreshTyre': bool,
+                'FastF1Generated': bool,
+                'IsAccurate': bool,
+                'Source': 'category',
+                'Deleted': bool,
+                'DeletedReason': 'category',
+                'Year': 'int16',
+                'RelativeDistance': float
+        }
 
-            'IsPersonalBest': bool,
-            'FreshTyre': bool,
-            'FastF1Generated': bool,
-            'IsAccurate': bool,
-            'Source': 'category',
-            'Deleted': bool,
-            'DeletedReason': 'category',
-            'Year': 'int16',
-            'RelativeDistance': float
-    }
 
-folder_path = 'D:/AD_npz_noFailures_telemetry'
+    folder_path = '../Dataset/OnlyFailuresByDriver/npz_failures'
 
-for file in os.listdir(folder_path):
+    for file in os.listdir(folder_path):
 
-    try:
-        print(f'Loading {file}...')
+        try:
+            print(f'Loading {file}...')
 
-        data_path = os.path.join(folder_path, file)
-        np_data = np.load(data_path, allow_pickle=True)['data']
+            data_path = os.path.join(folder_path, file)
+            np_data = np.load(data_path, allow_pickle=True)['data']
 
-        year = file.split('_')[0]
-        event_name = file.split('_')[1].split('.')[0]
-        print(f'Loaded! Converting to dataframe...')
+            year = file.split('_')[0]
+            event_name = file.split('_')[1].split('.')[0]
+            print(f'Loaded! Converting to dataframe...')
 
-        df = pd.DataFrame(np_data, columns=all_columns)
-        df = df.astype(dtype_dict)
+            df = pd.DataFrame(np_data, columns=all_columns)
+            df = df.astype(dtype_dict)
 
-        print(f'Done!')
+            print(f'Done!')
 
-        normClass = Normalizer()
-        scaler = 'MinMaxScaler'
-        cleaned_data = normClass.normalize_data(df, scaler)
+            normClass = Normalizer()
+            scaler = 'MinMaxScaler'
+            cleaned_data = normClass.normalize_data(df, scaler)
 
-        print('Saving cleaned data...')
-        stime = time.time()
-        np.savez_compressed(f'AD_noFailures_normalized/{scaler}/{year}_{event_name}_AD_{scaler}_normalized.npz', data=cleaned_data)
-        etime = time.time()
-        print(f'Done in {(etime - stime)/60:.2f} minutes')
+            print('Saving cleaned data...')
+            stime = time.time()
+            np.savez_compressed(f'../Dataset/OnlyFailuresByDriver/npz_failures_normalized/{scaler}/{year}_{event_name}_AD_{scaler}_normalized.npz', data=cleaned_data)
+            etime = time.time()
+            print(f'Done in {(etime - stime)/60:.2f} minutes')
 
-    except Exception as e:
-        print(f'Error processing {file}: {e}')
+        except Exception as e:
+            print(f'Error processing {file}: {e}')

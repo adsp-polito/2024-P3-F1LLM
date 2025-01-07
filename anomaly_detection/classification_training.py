@@ -1,90 +1,33 @@
 import numpy as np
 import pandas as pd
-from ..data_extraction_and_preprocessing.normalize_npz import Normalizer
-import os
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
 
-def extract_last_3_laps(npz_file_path):
-    """
-    Extracts the last 3 laps for each driver from a .npz file.
-    Skips files from 2024 and those where no data is present.
+new_data_path = "../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized.npz"
 
-    Args:
-        npz_file_path (str): Path to the .npz file.
-    
-    Returns:
-        pd.DataFrame or None: Filtered DataFrame with the last 3 laps for each driver, 
-                              or None if the file is skipped or has no data.
-    """
-    # Load the data from the .npz file
-    data = np.load(npz_file_path, allow_pickle=True)["data"]
+# Load the new data
+new_data = np.load(new_data_path, allow_pickle=True)['data']
+new_data_array = np.array(new_data, dtype=np.float32)
 
-    # Skip files from the 2024 season
-    if npz_file_path.split('/')[-1].startswith('2024'):
-        print(f"Skipping file from 2024 season: {npz_file_path}")
-        return None
+# Split the data into features and target
+X = new_data_array[:, :-1]  # All columns except the last one
+y = new_data_array[:, -1]   # The last column
 
-    # If the dataset is empty, print a message and skip
-    if data.shape[0] == 0:
-        print(f"No data available in file: {npz_file_path.split('/')[-1]}. This driver did not participate in the race.")
-        return None
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Define the column names for the dataset
-    columns = [
-        'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
-        'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
-        'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
-        'Compound_x', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate', 'TrackStatus',
-        'Position', 'Deleted', 'DeletedReason', 'FastF1Generated', 'IsAccurate', 'Compound_y',
-        'TyreLife_y', 'TimeXY', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp',
-        'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead',
-        'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance',
-        'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
-    ]
+# Create and train the Random Forest model
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
 
-    # Create a DataFrame from the loaded data
-    df = pd.DataFrame(data, columns=columns)
+# Make predictions
+y_pred = rf_model.predict(X_test)
 
-    # Sort the DataFrame by Driver and LapNumber to ensure correct ordering
-    df_sorted = df.sort_values(by=['Driver', 'LapNumber'])
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
 
-    # Find the last three laps using LapNumber
-    unique_lap_numbers = sorted(df['LapNumber'].unique(), reverse=True)  # Get unique lap numbers in descending order
-    last_3_laps_numbers = unique_lap_numbers[:3]  # Select the last 3 lap numbers
-
-    # Filter the DataFrame for the last 3 laps
-    last_3_laps = df[df['LapNumber'].isin(last_3_laps_numbers)]
-
-    return last_3_laps
-
-# main
-if __name__ == "__main__":
-
-    # Path to the folder and all file list
-    folder_path = "Dataset/OnlyFailuresByDriver"  
-    all_files = []
-
-    # Collect all .npz files from the folder
-    for f in os.listdir(folder_path):
-        filepath = os.path.join(folder_path, f)
-        all_files.append(filepath)
-
-    all_files = sorted(all_files)
-
-    final_failure = []
-
-    # Process each file
-    for file_path in all_files:
-        print(f"Processing {file_path.split('/')[2]}...")
-        last_3_laps = extract_last_3_laps(file_path)
-        if last_3_laps is not None:  # Only append valid results
-            final_failure.append(last_3_laps)
-
-    # Combine all DataFrames and sort by Driver and LapNumber
-    final_failure_df = pd.concat(final_failure)
-
-    # Normalize the data
-    normClass = Normalizer()
-    norm_final_failure = normClass.normalize_data(final_failure_df, "MinMaxScaler")
-
-    # Save the final DataFrame to a .csv file
-    norm_final_failure.to_csv("Dataset/Last3Laps.csv", index=False)
+print(f"Accuracy: {accuracy:.2f}")
+print("Classification Report:")
+print(report)
