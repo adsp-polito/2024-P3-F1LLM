@@ -1,43 +1,36 @@
 import numpy as np
 import pandas as pd
+from pandas.core.interchange.from_dataframe import primitive_column_to_ndarray
+
 from data_extraction_and_preprocessing.normalize_npz import Normalizer
 import os
 
-def extract_last_3_laps(npz_file_path, train=True):
-    """
-    Extracts the last 3 laps for each driver from a .npz file.
-    Filters files based on the year: skips 2024 in train mode, processes only 2024 in non-train mode.
 
-    Args:
-        npz_file_path (str): Path to the .npz file.
-        train (bool): Flag to indicate if the function is in train mode.
-    
-    Returns:
-        pd.DataFrame or None: Filtered DataFrame with the last 3 laps for each driver, 
-                              or None if the file is skipped or has no data.
-    """
+def extract_last_3_laps(df):
 
-    # Handle train and non-train conditions
-    is_2024 = npz_file_path.split('/')[-1].split('\\')[1].startswith('2024')
+    # Find the last three laps using LapNumber
+    unique_lap_numbers = sorted(df['LapNumber'].unique(), reverse=True)  # Get unique lap numbers in descending order
+    last_3_laps_numbers = unique_lap_numbers[:3]  # Select the last 3 lap numbers
 
-    if train and is_2024:
-        print(f"Skipping file from 2024 season: {npz_file_path}")
-        return None
-    elif not train and not is_2024:
-        print(f"Skipping file not from 2024 season: {npz_file_path}")
-        return None
+    # Filter the DataFrame for the last 3 laps
+    last_3_laps = df[df['LapNumber'].isin(last_3_laps_numbers)]
 
-    # Load the data from the .npz file
-    print(f"Processing {file_path.split('/')[3]}...")
-    data = np.load(npz_file_path, allow_pickle=True)["data"]
+    return last_3_laps
 
-    # If the dataset is empty, print a message and skip
-    if data.shape[0] == 0:
-        print(f"No data available in file: {npz_file_path.split('/')[-1]}. This driver did not participate in the race.")
-        return None
 
-    # Define the column names for the dataset
-    columns = [
+# main
+if __name__ == "__main__":
+
+    # Normalize the data
+    normClass = Normalizer(pit_stops=True)
+
+    folder_path = '../Dataset/OnlyFailuresByDriver/npz_failures'
+    train_mode = True
+
+    driver = None # set a value or None
+    event = None # set a value or None
+
+    df_columns = [
         'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
         'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
         'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
@@ -49,59 +42,66 @@ def extract_last_3_laps(npz_file_path, train=True):
         'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
     ]
 
-    # Create a DataFrame from the loaded data
-    df = pd.DataFrame(data, columns=columns)
-
-    # Find the last three laps using LapNumber
-    unique_lap_numbers = sorted(df['LapNumber'].unique(), reverse=True)  # Get unique lap numbers in descending order
-    last_3_laps_numbers = unique_lap_numbers[:3]  # Select the last 3 lap numbers
-
-    # Filter the DataFrame for the last 3 laps
-    last_3_laps = df[df['LapNumber'].isin(last_3_laps_numbers)]
-
-    # Add the failure column
-    failure = npz_file_path.split('_')[4].split(".")[0]
-    last_3_laps['Failure'] = failure
-
-    return last_3_laps
-
-
-# main
-if __name__ == "__main__":
-
-    # Path to the folder and all file list
-    folder_path = "../Dataset/OnlyFailuresByDriver/npz_failures"
-    all_files = []
-
-    # Collect all .npz files from the folder
+    all_data = []
     for f in os.listdir(folder_path):
-        filepath = os.path.join(folder_path, f)
-        all_files.append(filepath)
 
-    all_files = sorted(all_files)
+        data = None
 
-    final_failure = []
+        if train_mode and f.endswith('.npz') and not f.startswith('2024'):
+            if driver is None and event is None:
+                print(f'Loading {f}...')
+                data = np.load(os.path.join(folder_path, f), allow_pickle=True)['data']
+            else:
+                print('You specified a driver and/or an event in \'train\' mode.')
+                break
+        elif not train_mode and f.endswith('.npz') and f.startswith('2024'):
+            if driver is None and event is None:
+                print(f'Loading {f}...')
+                data = np.load(os.path.join(folder_path, f), allow_pickle=True)['data']
+            else:
+                driver_file = int(f.split('_')[2])
+                event_file = f.split('_')[1]
+                print(f'Driver: {driver_file}, Event: {event_file}')
+                if driver == driver_file and event == event_file:
+                    print(f'Loading {f}...')
+                    data = np.load(os.path.join(folder_path, f), allow_pickle=True)['data']
+                else:
+                    continue
 
-    # Set train or test mode
-    train_mode = False  # Set to False for test mode
+        if data is not None and data.size > 0:
+            df = pd.DataFrame(data, columns=df_columns)
 
-    # Process each file
-    for file_path in all_files:
+            # Ensure the DataFrame is not empty
+            if df.empty:
+                print(f"DataFrame for file {f} is empty. Skipping this file.")
+                continue
 
-        last_3_laps = extract_last_3_laps(file_path, train=train_mode)
-        if last_3_laps is not None:  # Only append valid results
-            final_failure.append(last_3_laps)
+            # Add the failure column
+            failure = f.split('_')[3].split(".")[0]
+            df['Failure'] = failure
 
-    # Combine all DataFrames and sort by Driver and LapNumber
-    final_failure_df = pd.concat(final_failure)
+            norm_df = normClass.normalize_data(df)
+            all_data.append(norm_df)
+            print(f'Shape: {norm_df.shape}')
+            print(f'Loaded {f}!, All data: {len(all_data)}')
+        else:
+            print(f"File {f} did not contain valid data.")
+            continue
 
-    # Normalize the data
-    normClass = Normalizer(pit_stops=True)
-    norm_final_failure = normClass.normalize_data(final_failure_df)
+
+
+
+    if len(all_data) > 1:
+        norm_final_failure = np.concatenate(all_data, axis=0)
+    else:
+        norm_final_failure = all_data[0]
 
     # Save the dataset based on the mode (train or test)
     dataset_type = "train" if train_mode else "test"
-    output_file = f'../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_{dataset_type}.npz'
+    if driver is not None and event is not None:
+        output_file = f'../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_{dataset_type}_{driver}_{event}.npz'
+    else:
+        output_file = f'../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_{dataset_type}.npz'
     np.savez_compressed(output_file, data=norm_final_failure)
 
     print(f"Dataset saved as: {output_file}")
