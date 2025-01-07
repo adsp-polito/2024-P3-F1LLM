@@ -1,9 +1,8 @@
 import time
 import numpy as np
 import pandas as pd
-from numba.cuda.libdevice import half2float
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import os
 
 
@@ -15,10 +14,8 @@ def convert_time_to_seconds(df, col):
     Returns:
         float: Time in seconds.
     """
-    df[f'{col}_in_ms'] = pd.to_timedelta(df[col], errors='coerce').dt.total_seconds() * 1000
-    df.drop(columns=[col], inplace=True)
-
-
+    df.loc[:, f'{col}_in_ms'] = pd.to_timedelta(df[col], errors='coerce').dt.total_seconds() * 1000
+    df.drop(columns=col, inplace=True)
 
 # Check which columns are present in the dataset
 def check_columns(df, columns):
@@ -51,14 +48,14 @@ def map_features(df):
             'Red Bull Racing': 14,
             'McLaren': 15,
             'Kick Sauber': 16
-        }, 
+        },
         'Event': {
             'Canadian Grand Prix': 1,
             'Belgian Grand Prix': 2,
             'British Grand Prix': 3,
             'São Paulo Grand Prix': 4,
-            '70th Anniversary Grand Prix': 3, # same id as british grand prix
-            'Pre-Season Testing': 6,    # to be removed
+            '70th Anniversary Grand Prix': 3,  # same id as british grand prix
+            'Pre-Season Testing': 6,  # to be removed
             'Azerbaijan Grand Prix': 7,
             'Mexican Grand Prix': 8,
             'Russian Grand Prix': 9,
@@ -67,7 +64,7 @@ def map_features(df):
             'Italian Grand Prix': 12,
             'Brazilian Grand Prix': 13,
             'Mexico City Grand Prix': 14,
-            'Pre-Season Test 1': 15,    # to be removed
+            'Pre-Season Test 1': 15,  # to be removed
             'Monaco Grand Prix': 16,
             'Qatar Grand Prix': 17,
             'Bahrain Grand Prix': 18,
@@ -77,8 +74,8 @@ def map_features(df):
             'Las Vegas Grand Prix': 22,
             'Abu Dhabi Grand Prix': 23,
             'Pre-Season Track Session': 24,  # to be removed
-            'Pre-Season Test 2': 25,    # to be removed
-            'Sakhir Grand Prix': 18,    # same id as 'Bahrain Grand Prix'
+            'Pre-Season Test 2': 25,  # to be removed
+            'Sakhir Grand Prix': 18,  # same id as 'Bahrain Grand Prix'
             'Tuscan Grand Prix': 27,
             'German Grand Prix': 28,
             'Hungarian Grand Prix': 29,
@@ -94,7 +91,7 @@ def map_features(df):
             'Emilia Romagna Grand Prix': 39,
             'Dutch Grand Prix': 40,
 
-            'Styrian Grand Prix': 34, # same id as 'Austrian Grand Prix'
+            'Styrian Grand Prix': 34,  # same id as 'Austrian Grand Prix'
         },
         'Compound': {
             'SOFT': 1,
@@ -103,7 +100,7 @@ def map_features(df):
             'INTERMEDIATE': 4,
             'WET': 5
         },
-        'DRS'   : {
+        'DRS': {
             0: 0,
             1: 0,
             2: np.nan,
@@ -126,12 +123,12 @@ def map_features(df):
     df = df.dropna(subset=['Event'])
     df = df.dropna(subset=['Compound'])
     df = df.dropna(subset=['TrackStatus'])
-    
+
     df['Team'] = df['Team'].map(map_dict['Team'])
     df['Event'] = df['Event'].map(map_dict['Event'])
     df['Compound'] = df['Compound'].map(map_dict['Compound'])
     df['DRS'] = df['DRS'].map(map_dict['DRS'])
-    
+
     df = df.dropna(subset=['DRS'])
 
     return df
@@ -167,8 +164,7 @@ def normalize_data(df, scaler):
 
     # Rename 'Compound_x' to 'Compound' and 'TyreLife_x' to 'TyreLife'
     if 'Compound_x' in df.columns and 'TyreLife_x' in df.columns:
-        df.rename(columns={'Compound_x': 'Compound'}, inplace=True)
-        df.rename(columns={'TyreLife_x': 'TyreLife'}, inplace=True)
+        df = df.rename(columns={'Compound_x': 'Compound', 'TyreLife_x': 'TyreLife'})
 
     # List of time columns to convert
     time_columns = [
@@ -180,7 +176,6 @@ def normalize_data(df, scaler):
         if col in df.columns:
             # df[col] = df[col].apply(convert_time_to_seconds)
             convert_time_to_seconds(df, col)
-
 
     # Columns to normalize
     numerical_cols = [
@@ -199,14 +194,14 @@ def normalize_data(df, scaler):
         'DistanceToDriverAhead',
         'RPM',
         'nGear',
-        'Throttle', 
+        'Throttle',
         # 'DRS',        # categorical
-        'X', 
-        'Y', 
-        'Z', 
-        'Distance', 
-        'TyreLife', 
-        #'TrackStatus'  # categorical
+        'X',
+        'Y',
+        'Z',
+        'Distance',
+        'TyreLife',
+        # 'TrackStatus'  # categorical
     ]
 
     df.dropna(subset=['Time_in_ms'], inplace=True)
@@ -239,31 +234,30 @@ def normalize_data(df, scaler):
     # print(f'Dataframe shape before removing all pit stops: {df.shape}')
 
     # Compute the set of pit stops for each driver
-    driver_pit_laps = {
-    driver: set(df[(df['DriverNumber'] == driver) & (df['PitInTime_in_ms'].notna())]['LapNumber'])
-    .union(df[(df['DriverNumber'] == driver) & (df['PitOutTime_in_ms'].notna())]['LapNumber'])
-    for driver in df['DriverNumber'].unique()
-    }
+    # driver_pit_laps = {
+    #     driver: set(df[(df['DriverNumber'] == driver) & (df['PitInTime_in_ms'].notna())]['LapNumber'])
+    #     .union(df[(df['DriverNumber'] == driver) & (df['PitOutTime_in_ms'].notna())]['LapNumber'])
+    #     for driver in df['DriverNumber'].unique()
+    # }
 
     # Filter dataset using the precomputed mapping
-    df = df[~df.apply(
-    lambda row: row['LapNumber'] in driver_pit_laps[row['DriverNumber']],
-    axis=1
-    )]
+    # df = df[~df.apply(
+    #     lambda row: row['LapNumber'] in driver_pit_laps[row['DriverNumber']],
+    #     axis=1
+    # )]
 
     # print(f'Total number of laps after removing all pit stops: {df["LapNumber"].nunique()}')
     # print(f'Dataframe shape after removing all pit stops: {df.shape}')
 
     # One-hot encode 'Compound'
     if 'Compound' in df.columns:
-        df = df[df['Compound'] != 'UNKNOWN'] # remove UNKNOWN compound records
+        df = df[df['Compound'] != 'UNKNOWN']  # remove UNKNOWN compound records
         # one_hot = pd.get_dummies(df['Compound'], prefix='Compound')
         # df = pd.concat([df, one_hot], axis=1).drop(columns=['Compound'])
 
-
     # Define a list of pre-season events
     pre_season_events = [
-        "Pre-Season Testing", "Pre-Season Test 1", "Pre-Season Test 2", 
+        "Pre-Season Testing", "Pre-Season Test 1", "Pre-Season Test 2",
         "Pre-Season Track Session", "Pre-Season Test"
     ]
 
@@ -272,6 +266,8 @@ def normalize_data(df, scaler):
 
     # Map Team and Event
     df = map_features(df)
+
+
 
     # Columns to drop (irrelevant or redundant)
     drop_cols = [
@@ -294,7 +290,7 @@ def normalize_data(df, scaler):
     # numerical_cols = [col for col in numerical_cols if col in df.columns]
 
     # Handle DistanceToDriverAhead and DriverAhead
-    df['DriverAhead'] = df['DriverAhead'].apply(lambda x: x if pd.isna(x) else int(x))
+    df.loc[:, 'DriverAhead'] = df['DriverAhead'].apply(lambda x: x if pd.isna(x) else int(x))
 
     if 'Position' in df.columns:
         df.loc[df['Position'] == 1, 'DistanceToDriverAhead'] = 0
@@ -302,8 +298,14 @@ def normalize_data(df, scaler):
 
     df = df.dropna(subset=['DriverAhead'])
     df['DriverAhead'] = df['DriverAhead'].astype('int8')
-    df['DistanceToDriverAhead'].replace([np.inf, -np.inf], np.nan, inplace=True)
+    df['DistanceToDriverAhead'] = df['DistanceToDriverAhead'].replace([np.inf, -np.inf], np.nan)
     df.dropna(subset=['DistanceToDriverAhead'], inplace=True)
+
+    # print(df)
+    # for col in df.columns:
+    #     print(f'{col}: {len(df[col].unique())}, First and last: {df[col].iloc[0]}, {df[col].iloc[-1]}')
+    #     print(f'{df[col].unique()}')
+    # print(f'Dataframe shape: {df.shape}')
 
     # Remove records where LapNumber is equal to 1 or 2
     # df = df[~df['LapNumber'].isin([1, 2])]
@@ -314,14 +316,14 @@ def normalize_data(df, scaler):
             transformers=[
                 ('num', StandardScaler(), numerical_cols),  # Standardize numerical features
             ],
-            remainder='passthrough'  # Retain non-normalized features as-is
+            remainder='passthrough',  # Retain non-normalized features as-is
         )
     elif scaler == 'MinMaxScaler':
         preprocessor = ColumnTransformer(
             transformers=[
                 ('num', MinMaxScaler(), numerical_cols),  # Normalize numerical features
             ],
-            remainder='passthrough'  # Retain non-normalized features as-is
+            remainder='passthrough',  # Retain non-normalized features as-is
         )
 
     # print("\n", df.dtypes, "\n")
@@ -331,16 +333,36 @@ def normalize_data(df, scaler):
 
     # Apply transformations
     processed_data = preprocessor.fit_transform(df)
+    # processed_data = df.to_numpy()
+    processed_data = processed_data.astype(np.float32)  # Convert to float32 to reduce memory
+    # print(processed_data[0:5])
+    #for col in processed_data.T:
+    #    print(f'{len(set(col))}')
 
-    processed_data = processed_data.astype(np.float32) # Convert to float32 to reduce memory
+    #print(processed_data[0:5])
+    #print(processed_data[-6:-1])
+
+
+
+    # print(processed_data[0:5])# Get feature names for numerical and passthrough columns
+    num_features = numerical_cols
+    passthrough_features = [col for col in df.columns if col not in numerical_cols]
+    all_features = num_features + passthrough_features
+
+    # Convert the processed array back to a DataFrame
+    processed_df = pd.DataFrame(processed_data, columns=all_features, index=df.index)
+
+    
+    #print(f'Numpy data shape: {processed_data.shape}')
 
     end_time = time.time()
     elapsed_time = (end_time - start_time) / 60  # Convert to minutes
-    print(f"Preprocessing took {elapsed_time:.2f} minutes.")
+    # print(f"Preprocessing took {elapsed_time:.2f} minutes.")
+    # print(f'data shape: {processed_data.shape}')
     return processed_data
 
 
-all_columns=[
+all_columns = [
     'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
     'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
     'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
@@ -353,79 +375,94 @@ all_columns=[
 ]
 
 dtype_dict = {
-            "Driver": 'category',
-            "DriverNumber": 'category',
-            "LapNumber": 'int8',
-            "Compound_x": 'category',
-            "Compound_y": 'category',
-            "TyreLife_x": 'int8',
-            "TyreLife_y": 'int8',
-            "Team": 'category',
-            "TrackStatus": 'category',
-            "Position": 'int8',
-            "AirTemp": 'float16',
-            "Humidity": 'float16',
-            "Pressure": 'float16',
-            "Rainfall": bool,
-            "TrackTemp": 'float16',
-            "WindDirection": 'float16',
-            "WindSpeed": 'float16',
-            "DistanceToDriverAhead": 'float32',
-            "RPM": 'int16',
-            "Speed": 'int16',
-            "nGear": 'int8',
-            "Throttle": 'int8',
-            "Brake": bool,
-            "DRS": 'int8',
-            "Distance": 'float32',
-            "X": 'float32',
-            "Y": 'float32',
-            "Z": 'float32',
-            "Event": 'category',
+    "Driver": 'category',
+    "DriverNumber": 'category',
+    "LapNumber": 'int8',
+    "Compound_x": 'category',
+    "Compound_y": 'category',
+    "TyreLife_x": 'int8',
+    "TyreLife_y": 'int8',
+    "Team": 'category',
+    "TrackStatus": 'category',
+    "Position": 'int8',
+    "AirTemp": 'float16',
+    "Humidity": 'float16',
+    "Pressure": 'float16',
+    "Rainfall": bool,
+    "TrackTemp": 'float16',
+    "WindDirection": 'float16',
+    "WindSpeed": 'float16',
+    "DistanceToDriverAhead": 'float32',
+    "RPM": 'int16',
+    "Speed": 'int16',
+    "nGear": 'int8',
+    "Throttle": 'int8',
+    "Brake": bool,
+    "DRS": 'int8',
+    "Distance": 'float32',
+    "X": 'float32',
+    "Y": 'float32',
+    "Z": 'float32',
+    "Event": 'category',
 
-            'PitOutTime': object,
-            'PitInTime': object,
-            "LapTime": object,
-            "Time": object,
+    'PitOutTime': object,
+    'PitInTime': object,
+    "LapTime": object,
+    "Time": object,
 
-            'IsPersonalBest': bool,
-            'FreshTyre': bool,
-            'FastF1Generated': bool,
-            'IsAccurate': bool,
-            'Source': 'category',
-            'Deleted': bool,
-            'DeletedReason': 'category',
-            'Year': 'int16',
-            'RelativeDistance': float
-    }
+    'IsPersonalBest': bool,
+    'FreshTyre': bool,
+    'FastF1Generated': bool,
+    'IsAccurate': bool,
+    'Source': 'category',
+    'Deleted': bool,
+    'DeletedReason': 'category',
+    'Year': 'int16',
+    'RelativeDistance': float
+}
 
-folder_path = 'D:/AD_npz_noFailures_telemetry'
+folder_path = 'D:/F1LLM_Datasets/all_telemetry_npz_data_merged/2024'
 
 for file in os.listdir(folder_path):
+    if file == '2024_LasVegasGrandPrix.npz':    # only process this file
+        try:
 
-    try:
-        print(f'Loading {file}...')
+            print(f'Loading {file}...')
 
-        data_path = os.path.join(folder_path, file)
-        np_data = np.load(data_path, allow_pickle=True)['data']
+            data_path = os.path.join(folder_path, file)
+            np_data = np.load(data_path, allow_pickle=True)['data']
 
-        year = file.split('_')[0]
-        event_name = file.split('_')[1].split('.')[0]
-        print(f'Loaded! Converting to dataframe...')
+            year = file.split('_')[0]
+            event_name = file.split('_')[1].split('.')[0]
+            print(f'Loaded! Converting to dataframe...')
 
-        df = pd.DataFrame(np_data, columns=all_columns)
-        df = df.astype(dtype_dict)
+            df = pd.DataFrame(np_data, columns=all_columns)
+            df = df.astype(dtype_dict)
 
-        print(f'Done!')
+            print(f'Done!')
 
-        scaler = 'MinMaxScaler'
-        cleaned_data = normalize_data(df, scaler)
+            scaler = 'MinMaxScaler'
 
-        print('Saving cleaned data...')
-        stime = time.time()
-        np.savez_compressed(f'AD_noFailures_normalized/{scaler}/{year}_{event_name}_AD_{scaler}_normalized.npz', data=cleaned_data)
-        etime = time.time()
-        print(f'Done in {(etime - stime)/60:.2f} minutes')
+            # Loop through unique drivers
+            for driver in df['Driver'].unique():
+                # Filter the DataFrame for the current driver
+                if driver == 'GAS':
+                    driver_df = df[df['Driver'] == driver].copy()
 
-    except Exception as e:
-        print(f'Error processing {file}: {e}')
+                    # Normalize the data for the current driver
+                    cleaned_data = normalize_data(driver_df, scaler)
+
+                    print(f'Saving cleaned data for {driver}...')
+                    stime = time.time()
+
+                    # Save the cleaned and normalized data for the current driver
+                    np.savez_compressed(
+                        f'../temp_outputs/{year}_{event_name}_{driver}_{scaler}_normalized_complete_wPits.npz',
+                        data=cleaned_data
+                    )
+
+                    etime = time.time()
+                    print(f'Done in {(etime - stime) / 60:.2f} minutes')
+
+        except Exception as e:
+            print(f'Error processing {file}: {e}')
