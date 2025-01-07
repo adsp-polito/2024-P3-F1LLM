@@ -92,7 +92,7 @@ def evaluate_model(model, test_loader, device):
 # Main function
 def main():
     # Load the dataset
-    new_data_path = "Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized.npz"
+    new_data_path = "Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_train.npz"
     data = np.load(new_data_path, allow_pickle=True)['data']
 
     # Separate features and labels
@@ -103,7 +103,7 @@ def main():
     batch_size = 32
     learning_rate = 0.0001
     epochs = 20
-    sequence_length = 10  # Length of the sliding window
+    sequence_length = 20  # Length of the sliding window
     n_features = X.shape[1]           # Number of features per sample
     n_classes = len(np.unique(y))     # Automatically determine the number of classes
 
