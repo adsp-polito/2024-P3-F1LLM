@@ -11,7 +11,6 @@ def get_last_3_laps(laps):
     start_lap_number = max(1, last_lap_number - 2)
     return laps[laps['LapNumber'].between(start_lap_number, last_lap_number)]
 
-
 # Main function to process data for all races
 def data_from_races(db_path, output_folder, include_weather=True, save_file=True, years_to_include=None):
     # Enable FastF1 cache
@@ -76,7 +75,6 @@ def data_from_races(db_path, output_folder, include_weather=True, save_file=True
         clear_output()
 
     print("All csv have been saved")
-
 
 # Input and output paths
 db_path = 'Failures2014_2024_cleaned.csv'
