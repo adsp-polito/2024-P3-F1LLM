@@ -7,8 +7,7 @@ import os
 
 
 class Normalizer:
-    def __init__(self, scaler="MinMaxScaler", pit_stops=False):
-        self.scaler_type = scaler
+    def __init__(self, pit_stops=False):
         self.pit_stops = pit_stops
 
     def convert_time_to_seconds(self, df, col):
@@ -22,84 +21,84 @@ class Normalizer:
         df[f'{col}_in_ms'] = pd.to_timedelta(df[col], errors='coerce').dt.total_seconds() * 1000
         df.drop(columns=[col], inplace=True)
 
-
-
-    # Check which columns are present in the dataset
-    def check_columns(self, df, columns):
-        """
-        Args:
-            df (DataFrame): Input dataset.
-            columns (list): List of columns to check.
-        Returns:
-            list: Columns present in the dataset.
-        """
-        return [col for col in columns if col in df.columns]
-
-
     def map_features(self, df):
         map_dict = {
             'Team': {
                 'Ferrari': 1,
-                'Racing Point': 2,
-                'Alpine': 3,
-                'Alfa Romeo Racing': 4,
-                'Williams': 5,
-                'RB': 6,
-                'AlphaTauri': 7,
-                'Haas F1 Team': 8,
-                'Renault': 9,
-                'Toro Rosso': 10,
-                'Alfa Romeo': 11,
-                'Mercedes': 12,
-                'Aston Martin': 13,
-                'Red Bull Racing': 14,
-                'McLaren': 15,
-                'Kick Sauber': 16
-            }, 
+
+                'RB': 2,
+                'Toro Rosso': 2,
+                'AlphaTauri': 2,
+
+                'Racing Point': 3,
+                'Aston Martin': 3,
+
+                'Alpine': 4,
+                'Renault': 4,
+
+                'Alfa Romeo Racing': 5,
+                'Alfa Romeo': 5,
+                'Kick Sauber': 5,
+
+                'Williams': 6,
+                'Haas F1 Team': 7,
+                'Mercedes': 8,
+                'Red Bull Racing': 9,
+                'McLaren': 10,
+            },
+
             'Event': {
                 'Canadian Grand Prix': 1,
                 'Belgian Grand Prix': 2,
-                'British Grand Prix': 3,
-                'São Paulo Grand Prix': 4,
-                '70th Anniversary Grand Prix': 3, # same id as british grand prix
-                'Pre-Season Testing': 6,    # to be removed
-                'Azerbaijan Grand Prix': 7,
-                'Mexican Grand Prix': 8,
-                'Russian Grand Prix': 9,
-                'French Grand Prix': 10,
-                'United States Grand Prix': 11,
-                'Italian Grand Prix': 12,
-                'Brazilian Grand Prix': 13,
-                'Mexico City Grand Prix': 14,
-                'Pre-Season Test 1': 15,    # to be removed
-                'Monaco Grand Prix': 16,
-                'Qatar Grand Prix': 17,
-                'Bahrain Grand Prix': 18,
-                'Portuguese Grand Prix': 19,
-                'Singapore Grand Prix': 20,
-                'Miami Grand Prix': 21,
-                'Las Vegas Grand Prix': 22,
-                'Abu Dhabi Grand Prix': 23,
-                'Pre-Season Track Session': 24,  # to be removed
-                'Pre-Season Test 2': 25,    # to be removed
-                'Sakhir Grand Prix': 18,    # same id as 'Bahrain Grand Prix'
-                'Tuscan Grand Prix': 27,
-                'German Grand Prix': 28,
-                'Hungarian Grand Prix': 29,
-                'Saudi Arabian Grand Prix': 30,
-                'Australian Grand Prix': 31,
-                'Chinese Grand Prix': 32,
-                'Eifel Grand Prix': 33,
-                'Austrian Grand Prix': 34,
-                'Japanese Grand Prix': 35,
-                'Spanish Grand Prix': 36,
-                'Turkish Grand Prix': 37,
-                'Pre-Season Test': 38,  # to be removed
-                'Emilia Romagna Grand Prix': 39,
-                'Dutch Grand Prix': 40,
 
-                'Styrian Grand Prix': 34, # same id as 'Austrian Grand Prix'
+                'British Grand Prix': 3,
+                '70th Anniversary Grand Prix': 3,  # same id as british grand prix
+
+                'São Paulo Grand Prix': 4,
+                'Azerbaijan Grand Prix': 5,
+                'Mexican Grand Prix': 6,
+                'Russian Grand Prix': 7,
+                'French Grand Prix': 8,
+                'United States Grand Prix': 9,
+                'Italian Grand Prix': 10,
+                'Brazilian Grand Prix': 11,
+                'Mexico City Grand Prix': 12,
+                'Monaco Grand Prix': 13,
+                'Qatar Grand Prix': 14,
+
+                'Bahrain Grand Prix': 15,
+                'Sakhir Grand Prix': 15,  # same id as 'Bahrain Grand Prix'
+
+                'Portuguese Grand Prix': 16,
+                'Singapore Grand Prix': 17,
+                'Miami Grand Prix': 18,
+                'Las Vegas Grand Prix': 19,
+                'Abu Dhabi Grand Prix': 20,
+                'Tuscan Grand Prix': 21,
+                'German Grand Prix': 22,
+                'Hungarian Grand Prix': 23,
+                'Saudi Arabian Grand Prix': 24,
+                'Australian Grand Prix': 25,
+                'Chinese Grand Prix': 26,
+                'Eifel Grand Prix': 27,
+
+                'Austrian Grand Prix': 28,
+                'Styrian Grand Prix': 28,  # same id as 'Austrian Grand Prix'
+
+                'Japanese Grand Prix': 29,
+                'Spanish Grand Prix': 30,
+                'Turkish Grand Prix': 31,
+
+                'Emilia Romagna Grand Prix': 32,
+                'Dutch Grand Prix': 33,
+
+                # 'Pre-Season Test': 0,  # to be removed
+                # 'Pre-Season Track Session': 0,  # to be removed
+                # 'Pre-Season Test 2': 0,    # to be removed
+                # 'Pre-Season Testing': 0,  # to be removed
+                # 'Pre-Season Test 1': 0,  # to be removed
             },
+
             'Compound': {
                 'SOFT': 1,
                 'MEDIUM': 2,
@@ -107,9 +106,10 @@ class Normalizer:
                 'INTERMEDIATE': 4,
                 'WET': 5
             },
+
             'DRS'   : {
-                0: 0,
-                1: 0,
+                0: False,
+                1: False,
                 2: np.nan,
                 3: np.nan,
                 4: np.nan,
@@ -118,12 +118,13 @@ class Normalizer:
                 7: np.nan,
                 8: np.nan,
                 9: np.nan,
-                10: 3,
-                11: 3,
-                12: 3,
-                13: 3,
-                14: 3
+                10: True,
+                11: True,
+                12: True,
+                13: True,
+                14: True
             },
+
             'Failure':{
                 'Others': 0,
                 'Braking System': 1,
@@ -149,11 +150,10 @@ class Normalizer:
             df['Failure'] = df['Failure'].map(map_dict['Failure'])
         
         df = df.dropna(subset=['DRS'])
-
+        print('map superato!')
         return df
 
-
-    def normalize_data(self, df):
+    def normalize_data(self, df, scaler_type="MinMaxScaler"):
         """
         Features are handled as follows:
         1. Numerical features: Standardized using `StandardScaler` to ensure all values are on the same scale.
@@ -176,6 +176,7 @@ class Normalizer:
         Returns:
             np.array: Preprocessed dataset, combining standardized numerical features,
                     one-hot encoded categorical features, and unprocessed features.
+                    :param scaler_type:
         """
 
         print('Preprocessing data...')
@@ -188,18 +189,17 @@ class Normalizer:
 
         # List of time columns to convert
         time_columns = [
-            'Time', 'LapTime', 'PitOutTime', 'PitInTime'
+            'SessionTime', 'Time', 'LapTime', 'PitOutTime', 'PitInTime'
         ]
 
         # Convert all time columns to seconds
         for col in time_columns:
             if col in df.columns:
-                # df[col] = df[col].apply(convert_time_to_seconds)
                 self.convert_time_to_seconds(df, col)
-
 
         # Columns to normalize
         numerical_cols = [
+            'SessionTime_in_ms',
             'Time_in_ms',
             'LapTime_in_ms',
             'LapNumber',
@@ -208,51 +208,23 @@ class Normalizer:
             'AirTemp',
             'Humidity',
             'Pressure',
-            # 'Rainfall',   # boolean
             'TrackTemp',
             'WindDirection',
             'WindSpeed',
             'DistanceToDriverAhead',
             'RPM',
             'nGear',
-            'Throttle', 
-            # 'DRS',        # categorical
+            'Throttle',
             'X', 
             'Y', 
             'Z', 
             'Distance', 
-            'TyreLife', 
-            #'TrackStatus'  # categorical
+            'TyreLife',
         ]
 
         df.dropna(subset=['Time_in_ms'], inplace=True)
         df.dropna(subset=['LapTime_in_ms'], inplace=True)
 
-        # Handle pit stop time as a derived feature
-        # if 'PitOutTime_in_ms' in df.columns and 'PitInTime_in_ms' in df.columns:
-        #     df['PitInTime_in_ms'] = df['PitInTime_in_ms'].fillna(0).astype(float)
-        #     df['PitOutTime_in_ms'] = df['PitOutTime_in_ms'].fillna(0).astype(float)
-        #     df['PitStopTime_in_ms'] = (df['PitOutTime_in_ms'] - df['PitInTime_in_ms']).astype(float)
-        #     df = df.drop(columns=['PitOutTime_in_ms', 'PitInTime_in_ms'], errors='ignore')
-
-        # drivers = df['DriverNumber'].unique()
-
-        # print(f'Number of drivers: {len(drivers)}')
-        # print(f'Number of laps: {df["LapNumber"].unique()}')
-
-        # for driver in drivers:
-        #     lapsPitIn = df[df['PitInTime_in_ms'].notna()]['LapNumber'].unique()
-        #     lapsPitOut = df[df['PitOutTime_in_ms'].notna()]['LapNumber'].unique()
-
-        #     df = df[~df['DriverNumber'].isin([driver]) & (df['PitInTime_in_ms'].isna(lapsPitIn))]
-        #     df = df[~df['DriverNumber'].isin([driver]) & (df['PitOutTime_in_ms'].isna(lapsPitOut))]
-
-        #     print(f'Number of laps for driver {driver} after removing pit stops: {df["LapNumber"].unique()}')
-
-        # print(f'Number of laps after removing pit stops: {df["LapNumber"].unique()}')
-
-        # print(f'Total number of laps before removing all pit stops: {df["LapNumber"].nunique()}')
-        # print(f'Dataframe shape before removing all pit stops: {df.shape}')
 
         # Compute the set of pit stops for each driver
         if not self.pit_stops:
@@ -268,31 +240,16 @@ class Normalizer:
             axis=1
             )]
 
-        # print(f'Total number of laps after removing all pit stops: {df["LapNumber"].nunique()}')
-        # print(f'Dataframe shape after removing all pit stops: {df.shape}')
-
         # One-hot encode 'Compound'
         if 'Compound' in df.columns:
             df = df[df['Compound'] != 'UNKNOWN'] # remove UNKNOWN compound records
-            # one_hot = pd.get_dummies(df['Compound'], prefix='Compound')
-            # df = pd.concat([df, one_hot], axis=1).drop(columns=['Compound'])
-
-
-        # Define a list of pre-season events
-        pre_season_events = [
-            "Pre-Season Testing", "Pre-Season Test 1", "Pre-Season Test 2", 
-            "Pre-Season Track Session", "Pre-Season Test"
-        ]
-
-        # Drop rows with Event in pre-season events
-        df = df[~df['Event'].isin(pre_season_events)]
-
+        print('inizio il map')
         # Map Team and Event
         df = self.map_features(df)
 
         # Columns to drop (irrelevant or redundant)
         drop_cols = [
-            'Driver', 'DriverNumber', 'Stint', 'PitOutTime_in_ms', 'PitInTime_in_ms',
+            'Time_x', 'Driver', 'DriverNumber', 'Stint', 'PitOutTime_in_ms', 'PitInTime_in_ms',
             'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
             'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
             'FreshTyre', 'LapStartTime', 'LapStartDate', 'Deleted', 'DeletedReason', 'FastF1Generated',
@@ -300,17 +257,11 @@ class Normalizer:
             'RelativeDistance', 'Status', 'Year'
         ]
 
-        # print(f'columns before drop: {df.columns}\n')
-
         # Drop irrelevant columns if they exist in the dataset
         df = df.drop(columns=[col for col in drop_cols if col in df.columns], errors='ignore')
 
-        # print(f'columns after drop: {df.columns}\n')
-
-        # Check existing columns in the dataset
-        # numerical_cols = [col for col in numerical_cols if col in df.columns]
-
         # Handle DistanceToDriverAhead and DriverAhead
+        ('driverAhead1')
         df['DriverAhead'] = df['DriverAhead'].apply(lambda x: x if pd.isna(x) else int(x))
 
         if 'Position' in df.columns:
@@ -318,22 +269,20 @@ class Normalizer:
             df.loc[df['Position'] == 1, 'DriverAhead'] = 0
 
         df = df.dropna(subset=['DriverAhead'])
+        print('driverAhead2')
         df['DriverAhead'] = df['DriverAhead'].astype('int8')
         df['DistanceToDriverAhead'].replace([np.inf, -np.inf], np.nan, inplace=True)
         df.dropna(subset=['DistanceToDriverAhead'], inplace=True)
 
-        # Remove records where LapNumber is equal to 1 or 2
-        # df = df[~df['LapNumber'].isin([1, 2])]
-
         # Preprocessing pipeline
-        if self.scaler_type == 'StandardScaler':
+        if scaler_type == 'StandardScaler':
             preprocessor = ColumnTransformer(
                 transformers=[
                     ('num', StandardScaler(), numerical_cols),  # Standardize numerical features
                 ],
                 remainder='passthrough'  # Retain non-normalized features as-is
             )
-        elif self.scaler_type == 'MinMaxScaler':
+        elif scaler_type == 'MinMaxScaler':
             preprocessor = ColumnTransformer(
                 transformers=[
                     ('num', MinMaxScaler(), numerical_cols),  # Normalize numerical features
@@ -341,10 +290,9 @@ class Normalizer:
                 remainder='passthrough'  # Retain non-normalized features as-is
             )
 
-        # print("\n", df.dtypes, "\n")
-
         # Ensure all boolean columns are converted to int (otherwise it cause a problem)
-        df = df.apply(lambda col: col.map({True: 1, False: 0}) if col.dtypes == 'bool' else col)
+        print('conversione boolean')
+        df = df.apply(lambda boolean_col: boolean_col.map({True: 1, False: 0}) if boolean_col.dtypes == 'bool' else boolean_col)
 
         # Apply transformations
         processed_data = preprocessor.fit_transform(df)
@@ -356,95 +304,129 @@ class Normalizer:
         print(f"Preprocessing took {elapsed_time:.2f} minutes.")
         return processed_data
 
-if "__name__" == "__main__":
-    all_columns=[
-        'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
-        'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
-        'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
-        'Compound_x', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate', 'TrackStatus',
-        'Position', 'Deleted', 'DeletedReason', 'FastF1Generated', 'IsAccurate', 'Compound_y',
-        'TyreLife_y', 'TimeXY', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp',
-        'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead',
-        'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance',
-        'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
-    ]
+    def preprocessing_and_normalization(self, scaler_type="MinMaxScaler", driver=None, year=None, event=None):
 
-    dtype_dict = {
-                "Driver": 'category',
-                "DriverNumber": 'category',
-                "LapNumber": 'int8',
-                "Compound_x": 'category',
-                "Compound_y": 'category',
-                "TyreLife_x": 'int8',
-                "TyreLife_y": 'int8',
-                "Team": 'category',
-                "TrackStatus": 'category',
-                "Position": 'int8',
-                "AirTemp": 'float16',
-                "Humidity": 'float16',
-                "Pressure": 'float16',
-                "Rainfall": bool,
-                "TrackTemp": 'float16',
-                "WindDirection": 'float16',
-                "WindSpeed": 'float16',
-                "DistanceToDriverAhead": 'float32',
-                "RPM": 'int16',
-                "Speed": 'int16',
-                "nGear": 'int8',
-                "Throttle": 'int8',
-                "Brake": bool,
-                "DRS": 'int8',
-                "Distance": 'float32',
-                "X": 'float32',
-                "Y": 'float32',
-                "Z": 'float32',
-                "Event": 'category',
+        all_columns = [
+            'Time_x', 'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
+            'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
+            'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
+            'Compound_x', 'TyreLife_x', 'FreshTyre', 'Team', 'LapStartTime', 'LapStartDate', 'TrackStatus',
+            'Position', 'Deleted', 'DeletedReason', 'FastF1Generated', 'IsAccurate', 'Compound_y',
+            'TyreLife_y', 'Time_y', 'AirTemp', 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp',
+            'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead',
+            'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance',
+            'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
+        ]
 
-                'PitOutTime': object,
-                'PitInTime': object,
-                "LapTime": object,
-                "Time": object,
+        dtype_dict = {
+            "Driver": 'category',
+            "DriverNumber": 'category',
+            "LapNumber": 'int8',
+            "Compound_x": 'category',
+            "Compound_y": 'category',
+            "TyreLife_x": 'int8',
+            "TyreLife_y": 'int8',
+            "Team": 'category',
+            "TrackStatus": 'category',
+            "Position": 'int8',
+            "AirTemp": 'float16',
+            "Humidity": 'float16',
+            "Pressure": 'float16',
+            "Rainfall": bool,
+            "TrackTemp": 'float16',
+            "WindDirection": 'float16',
+            "WindSpeed": 'float16',
+            "DistanceToDriverAhead": 'float32',
+            "RPM": 'int16',
+            "Speed": 'int16',
+            "nGear": 'int8',
+            "Throttle": 'int8',
+            "Brake": bool,
+            "DRS": 'int8',
+            "Distance": 'float32',
+            "X": 'float32',
+            "Y": 'float32',
+            "Z": 'float32',
+            "Event": 'category',
 
-                'IsPersonalBest': bool,
-                'FreshTyre': bool,
-                'FastF1Generated': bool,
-                'IsAccurate': bool,
-                'Source': 'category',
-                'Deleted': bool,
-                'DeletedReason': 'category',
-                'Year': 'int16',
-                'RelativeDistance': float
+            'PitOutTime': object,
+            'PitInTime': object,
+            "LapTime": object,
+            "Time": object,
+
+            'IsPersonalBest': bool,
+            'FreshTyre': bool,
+            'FastF1Generated': bool,
+            'IsAccurate': bool,
+            'Source': 'category',
+            'Deleted': bool,
+            'DeletedReason': 'category',
+            'Year': 'int16',
+            'RelativeDistance': float
         }
 
+        folder_path = '../npz_all_telemetry_data'
 
-    folder_path = '../Dataset/OnlyFailuresByDriver/npz_failures'
+        for year_folder in os.listdir(folder_path):
+            year_folder_path = os.path.join(folder_path, year_folder)
 
-    for file in os.listdir(folder_path):
+            for file in os.listdir(year_folder_path):
 
-        try:
-            print(f'Loading {file}...')
+                try:
+                    if not file.split('_')[1].startswith('Pre'):
+                        if file == '2024_DutchGrandPrix.npz':
+                            print(f'Loading {file}...')
 
-            data_path = os.path.join(folder_path, file)
-            np_data = np.load(data_path, allow_pickle=True)['data']
+                            data_path = os.path.join(year_folder_path, file)
+                            np_data = np.load(data_path, allow_pickle=True)['data']
 
-            year = file.split('_')[0]
-            event_name = file.split('_')[1].split('.')[0]
-            print(f'Loaded! Converting to dataframe...')
+                            year = file.split('_')[0]
+                            event_name = file.split('_')[1].split('.')[0]
+                            print(f'Loaded! Converting to dataframe...')
 
-            df = pd.DataFrame(np_data, columns=all_columns)
-            df = df.astype(dtype_dict)
+                            df = pd.DataFrame(np_data, columns=all_columns)
+                            df = df.astype(dtype_dict)
 
-            print(f'Done!')
+                            print(f'Done!')
 
-            normClass = Normalizer()
-            scaler = 'MinMaxScaler'
-            cleaned_data = normClass.normalize_data(df, scaler)
+                            cleaned_data = self.normalize_data(df, scaler_type)
 
-            print('Saving cleaned data...')
-            stime = time.time()
-            np.savez_compressed(f'../Dataset/OnlyFailuresByDriver/npz_failures_normalized/{scaler}/{year}_{event_name}_AD_{scaler}_normalized.npz', data=cleaned_data)
-            etime = time.time()
-            print(f'Done in {(etime - stime)/60:.2f} minutes')
+                            print('Saving cleaned data...')
+                            stime = time.time()
+                            np.savez_compressed(
+                                f'../temp/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                data=cleaned_data)
+                            etime = time.time()
+                            print(f'Done in {(etime - stime) / 60:.2f} minutes')
 
-        except Exception as e:
-            print(f'Error processing {file}: {e}')
+                    else:
+                        print('Skipping pre-season event...')
+
+                except Exception as e:
+                    print(f'Error processing {file}: {e}')
+
+if __name__ == '__main__':
+    user_input = input('Select the operation to perform:\n '
+                       '1. [TRAIN] Normalize ALL data by event and year REMOVING pit-stops, and driver with failures (saved separately for classification training)\n '
+                       '2. [TRAIN] Normalize ALL data by event and year MAINTAINING pit-stops and REMOVING driver with failures (saved separately for classification training)\n '
+                       '3. [TEST] Normalize data by driver, event and year\n '
+                       '4. [TEST] Normalize a single file\n '
+                       '--> ')
+
+    if user_input == '1':
+        normalizer = Normalizer(pit_stops=False)
+        normalizer.preprocessing_and_normalization()
+    elif user_input == '2':
+        normalizer = Normalizer(pit_stops=True)
+        normalizer.preprocessing_and_normalization()
+    elif user_input == '3':
+        print('Not implemented yet.')
+    elif user_input == '4':
+        driver = input('Enter the driver name (first 3 letters): ')
+        driver = driver.upper()
+        year = input('Enter the year: ')
+        event = input('Enter the event name: ')
+    else:
+        print('Invalid input. Exiting...')
+        exit(1)
+
