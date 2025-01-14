@@ -7,8 +7,15 @@ import os
 
 
 class Normalizer:
-    def __init__(self, pit_stops=False):
+    def __init__(self, input_folder, output_folder, pit_stops=False, given_driver=None, given_year=None, given_event=None):
         self.pit_stops = pit_stops
+
+        self.input_folder_path = input_folder
+        self.output_folder_path = output_folder
+
+        self.given_driver = given_driver
+        self.given_year = given_year
+        self.given_event = given_event
 
     def convert_time_to_seconds(self, df, col):
         """
@@ -304,7 +311,7 @@ class Normalizer:
         print(f"Preprocessing took {elapsed_time:.2f} minutes.")
         return processed_data
 
-    def preprocessing_and_normalization(self, scaler_type="MinMaxScaler", driver=None, year=None, event=None):
+    def preprocessing_and_normalization(self, scaler_type="MinMaxScaler", normalize_by_driver=False):
 
         all_columns = [
             'Time_x', 'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
@@ -365,36 +372,80 @@ class Normalizer:
             'RelativeDistance': float
         }
 
-        folder_path = '../npz_all_telemetry_data'
+        if not os.path.exists(self.output_folder_path):
+            os.makedirs(self.output_folder_path)
 
-        for year_folder in os.listdir(folder_path):
-            year_folder_path = os.path.join(folder_path, year_folder)
+        for year_folder in os.listdir(self.input_folder_path):
+            year_folder_path = os.path.join(self.input_folder_path, year_folder)
 
             for file in os.listdir(year_folder_path):
-
                 try:
                     if not file.split('_')[1].startswith('Pre'):
-                        if file == '2024_DutchGrandPrix.npz':
-                            print(f'Loading {file}...')
 
-                            data_path = os.path.join(year_folder_path, file)
-                            np_data = np.load(data_path, allow_pickle=True)['data']
+                        print(f'Loading {file}...')
 
-                            year = file.split('_')[0]
-                            event_name = file.split('_')[1].split('.')[0]
-                            print(f'Loaded! Converting to dataframe...')
+                        data_path = os.path.join(year_folder_path, file)
+                        np_data = np.load(data_path, allow_pickle=True)['data']
 
-                            df = pd.DataFrame(np_data, columns=all_columns)
-                            df = df.astype(dtype_dict)
+                        year = file.split('_')[0]
+                        event_name = file.split('_')[1].split('.')[0]
+                        print(f'Loaded! Converting to dataframe...')
 
-                            print(f'Done!')
+                        df = pd.DataFrame(np_data, columns=all_columns)
+                        df = df.astype(dtype_dict)
 
+                        print(f'Done!')
+
+                        if self.given_event is not None and self.given_year is not None and self.given_driver is not None:
+                            if event_name == self.given_event or year == self.given_year:
+
+                                for driver in df['Driver'].unique():
+
+                                    # Filter the DataFrame for the current driver
+                                    if driver == self.given_driver:
+                                        driver_df = df[df['Driver'] == driver].copy()
+
+                                        # Normalize the data for the current driver
+                                        cleaned_data = self.normalize_data(driver_df, scaler_type)
+
+                                        print(f'Saving cleaned data for {driver}...')
+
+                                        # Save the cleaned and normalized data for the current driver
+                                        np.savez_compressed(
+                                            f'{self.output_folder_path}/test_data/selected_driver/{year}_{event_name}_{scaler_type}_{driver}_normalized_complete_wPits.npz',
+                                            data=cleaned_data
+                                        )
+
+                        elif normalize_by_driver:
+                            for driver in df['Driver'].unique():
+
+                                # Filter the DataFrame for the current driver
+                                driver_df = df[df['Driver'] == driver].copy()
+
+                                # Normalize the data for the current driver
+                                cleaned_data = self.normalize_data(driver_df, scaler_type)
+
+                                print(f'Saving cleaned data for {driver}...')
+
+                                # Save the cleaned and normalized data for the current driver
+                                np.savez_compressed(
+                                    f'{self.output_folder_path}/test_data/normalized_data_by_driver/{year}_{event_name}_{scaler_type}_{driver}_normalized_complete_wPits.npz',
+                                    data=cleaned_data
+                                )
+                        else:
+                            # Normalize the data for the entire event and year
                             cleaned_data = self.normalize_data(df, scaler_type)
 
                             print('Saving cleaned data...')
                             stime = time.time()
+
+                            if not os.path.exists(f'{self.output_folder_path}/train_data'):
+                                os.makedirs(f'{self.output_folder_path}/train_data')
+                            if not os.path.exists(f'{self.output_folder_path}/'):
+                                os.makedirs(f'{self.output_folder_path}/')
+
                             np.savez_compressed(
-                                f'../temp/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                f'{self.output_folder_path}/{year}_{event_name}_{scaler_type}_normalized.npz',
                                 data=cleaned_data)
                             etime = time.time()
                             print(f'Done in {(etime - stime) / 60:.2f} minutes')
@@ -406,26 +457,71 @@ class Normalizer:
                     print(f'Error processing {file}: {e}')
 
 if __name__ == '__main__':
+
+    input_folder = '../temp'   # EDIT THIS PATH
+    output_folder = '../temp'  # EDIT THIS PATH
+
+    if not os.path.exists(input_folder):
+        print('Input folder does not exist. Exiting...')
+        exit(1)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
     user_input = input('Select the operation to perform:\n '
                        '1. [TRAIN] Normalize ALL data by event and year REMOVING pit-stops, and driver with failures (saved separately for classification training)\n '
                        '2. [TRAIN] Normalize ALL data by event and year MAINTAINING pit-stops and REMOVING driver with failures (saved separately for classification training)\n '
-                       '3. [TEST] Normalize data by driver, event and year\n '
-                       '4. [TEST] Normalize a single file\n '
+                       '3. [TEST] Normalize data by driver, event and year MAINTAINING pit-stops\n '
+                       '4. [TEST] Normalize a single file (driver, event, year)\n '
                        '--> ')
 
     if user_input == '1':
-        normalizer = Normalizer(pit_stops=False)
+
+        if not os.path.exists(f'{output_folder}/train_data'):
+            os.makedirs(f'{output_folder}/train_data')
+        if not os.path.exists(f'{output_folder}/train_data/train_data_without_failures'):
+            os.makedirs(f'{output_folder}/train_data/train_data_without_failures')
+        if not os.path.exists(f'{output_folder}/train_data/train_data_with_failures'):
+            os.makedirs(f'{output_folder}/train_data/train_data_with_failures')
+
+        normalizer = Normalizer(input_folder, output_folder, pit_stops=False)
         normalizer.preprocessing_and_normalization()
+
     elif user_input == '2':
-        normalizer = Normalizer(pit_stops=True)
+
+        if not os.path.exists(f'{output_folder}/train_data'):
+            os.makedirs(f'{output_folder}/train_data')
+        if not os.path.exists(f'{output_folder}/train_data/train_data_without_failures'):
+            os.makedirs(f'{output_folder}/train_data/train_data_without_failures')
+        if not os.path.exists(f'{output_folder}/train_data/train_data_with_failures'):
+            os.makedirs(f'{output_folder}/train_data/train_data_with_failures')
+
+        normalizer = Normalizer(input_folder, output_folder, pit_stops=True)
         normalizer.preprocessing_and_normalization()
+
     elif user_input == '3':
-        print('Not implemented yet.')
+
+        if not os.path.exists(f'{output_folder}/test_data'):
+            os.makedirs(f'{output_folder}/test_data')
+        if not os.path.exists(f'{output_folder}/test_data/normalized_data_by_driver'):
+            os.makedirs(f'{output_folder}/test_data/normalized_data_by_driver')
+
+        normalizer = Normalizer(input_folder, output_folder, pit_stops=True)
+        normalizer.preprocessing_and_normalization(normalize_by_driver=True)
+
     elif user_input == '4':
+
         driver = input('Enter the driver name (first 3 letters): ')
         driver = driver.upper()
-        year = input('Enter the year: ')
         event = input('Enter the event name: ')
+        year = input('Enter the year: ')
+
+        if not os.path.exists(f'{output_folder}/test_data'):
+            os.makedirs(f'{output_folder}/test_data')
+        if not os.path.exists(f'{output_folder}/test_data/selected_driver'):
+            os.makedirs(f'{output_folder}/test_data/selected_driver')
+
+        normalizer = Normalizer(input_folder, output_folder, given_driver=driver, given_event=event, given_year=year, pit_stops=True)
+        normalizer.preprocessing_and_normalization()
     else:
         print('Invalid input. Exiting...')
         exit(1)
