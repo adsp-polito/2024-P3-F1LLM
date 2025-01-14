@@ -1,4 +1,6 @@
 import time
+from dataclasses import replace
+
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -29,6 +31,9 @@ class Normalizer:
         df.drop(columns=[col], inplace=True)
 
     def map_features(self, df):
+
+        df = df.dropna(subset=['Team'])
+        df = df.dropna(subset=['Event'])
         map_dict = {
             'Team': {
                 'Ferrari': 1,
@@ -117,14 +122,14 @@ class Normalizer:
             'DRS'   : {
                 0: False,
                 1: False,
-                2: np.nan,
-                3: np.nan,
-                4: np.nan,
-                5: np.nan,
-                6: np.nan,
-                7: np.nan,
-                8: np.nan,
-                9: np.nan,
+                2: False,
+                3: False,
+                4: False,
+                5: False,
+                6: False,
+                7: False,
+                8: False,
+                9: False,
                 10: True,
                 11: True,
                 12: True,
@@ -143,9 +148,6 @@ class Normalizer:
                 'Transmission and Gearbox': 7,
             }
         }
-
-        df = df.dropna(subset=['Team'])
-        df = df.dropna(subset=['Event'])
         df = df.dropna(subset=['Compound'])
         df = df.dropna(subset=['TrackStatus'])
         
@@ -157,7 +159,6 @@ class Normalizer:
             df['Failure'] = df['Failure'].map(map_dict['Failure'])
         
         df = df.dropna(subset=['DRS'])
-        print('map superato!')
         return df
 
     def normalize_data(self, df, scaler_type="MinMaxScaler"):
@@ -250,7 +251,10 @@ class Normalizer:
         # One-hot encode 'Compound'
         if 'Compound' in df.columns:
             df = df[df['Compound'] != 'UNKNOWN'] # remove UNKNOWN compound records
-        print('inizio il map')
+
+        if 'IsAccurate' in df.columns:
+            df = df[df['IsAccurate'] == True]
+
         # Map Team and Event
         df = self.map_features(df)
 
@@ -260,7 +264,7 @@ class Normalizer:
             'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
             'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
             'FreshTyre', 'LapStartTime', 'LapStartDate', 'Deleted', 'DeletedReason', 'FastF1Generated',
-            'IsAccurate', 'Compound_y', 'TyreLife_y', 'TimeXY', 'Date', 'SessionTime', 'Source',
+            'IsAccurate', 'Compound_y', 'TyreLife_y', 'Time_y', 'Date', 'SessionTime', 'Source',
             'RelativeDistance', 'Status', 'Year'
         ]
 
@@ -268,17 +272,16 @@ class Normalizer:
         df = df.drop(columns=[col for col in drop_cols if col in df.columns], errors='ignore')
 
         # Handle DistanceToDriverAhead and DriverAhead
-        ('driverAhead1')
-        df['DriverAhead'] = df['DriverAhead'].apply(lambda x: x if pd.isna(x) else int(x))
 
         if 'Position' in df.columns:
             df.loc[df['Position'] == 1, 'DistanceToDriverAhead'] = 0
             df.loc[df['Position'] == 1, 'DriverAhead'] = 0
 
+        df['DriverAhead'] = df['DriverAhead'].replace('', np.nan)
         df = df.dropna(subset=['DriverAhead'])
-        print('driverAhead2')
+
         df['DriverAhead'] = df['DriverAhead'].astype('int8')
-        df['DistanceToDriverAhead'].replace([np.inf, -np.inf], np.nan, inplace=True)
+        df['DistanceToDriverAhead'] = df['DistanceToDriverAhead'].astype(float).replace([np.inf, -np.inf], np.nan)
         df.dropna(subset=['DistanceToDriverAhead'], inplace=True)
 
         # Preprocessing pipeline
@@ -298,7 +301,6 @@ class Normalizer:
             )
 
         # Ensure all boolean columns are converted to int (otherwise it cause a problem)
-        print('conversione boolean')
         df = df.apply(lambda boolean_col: boolean_col.map({True: 1, False: 0}) if boolean_col.dtypes == 'bool' else boolean_col)
 
         # Apply transformations
@@ -382,22 +384,27 @@ class Normalizer:
                 try:
                     if not file.split('_')[1].startswith('Pre'):
 
-                        print(f'Loading {file}...')
+                        year = int(file.split('_')[0])
+                        event_name = file.split('_')[1].split('.')[0]
+
+                        if self.given_event is not None and self.given_year is not None:
+                            if self.given_event.lower() != event_name.lower() or self.given_year != year:
+                                continue
+
+                        print(f'Loading {event_name} of {year}...')
 
                         data_path = os.path.join(year_folder_path, file)
                         np_data = np.load(data_path, allow_pickle=True)['data']
 
-                        year = file.split('_')[0]
-                        event_name = file.split('_')[1].split('.')[0]
                         print(f'Loaded! Converting to dataframe...')
 
                         df = pd.DataFrame(np_data, columns=all_columns)
-                        df = df.astype(dtype_dict)
+                        # df = df.astype(dtype_dict)
 
                         print(f'Done!')
 
                         if self.given_event is not None and self.given_year is not None and self.given_driver is not None:
-                            if event_name == self.given_event or year == self.given_year:
+                            if event_name.lower() == self.given_event.lower() and year == self.given_year:
 
                                 for driver in df['Driver'].unique():
 
@@ -434,32 +441,56 @@ class Normalizer:
                                 )
                         else:
                             # Normalize the data for the entire event and year
-                            cleaned_data = self.normalize_data(df, scaler_type)
+                            failures_df = pd.read_csv('../Dataset/Failuers_grouped_2018_2024.csv') # TO BE CHANGED
+                            failures_of_year = failures_df[failures_df['Year'] == year] # TO BE CHANGED
+                            failure_found = False
 
-                            print('Saving cleaned data...')
-                            stime = time.time()
+                            if failures_of_year.shape[1] > 0:
+                                for failure in failures_of_year.iterrows():
+                                    driver_fail, event_fail, year_fail, problem_class = (failure[1]['DriverNumber'], failure[1]['EventName'], failure[1]['Year'], failure[1]['ProblemClass'])
+                                    event_fail = event_fail.replace(' ', '')
+                                    problem_class = problem_class.replace(' ', '')
 
-                            if not os.path.exists(f'{self.output_folder_path}/train_data'):
-                                os.makedirs(f'{self.output_folder_path}/train_data')
-                            if not os.path.exists(f'{self.output_folder_path}/'):
-                                os.makedirs(f'{self.output_folder_path}/')
+                                    if event_name.lower() == event_fail.lower() and year == year_fail:
+                                        failure_found = True
+                                        df['DriverNumber'] = df['DriverNumber'].astype(int)
+                                        print(f'df: {df.shape}')
 
-                            np.savez_compressed(
-                                f'{self.output_folder_path}/{year}_{event_name}_{scaler_type}_normalized.npz',
-                                data=cleaned_data)
-                            etime = time.time()
-                            print(f'Done in {(etime - stime) / 60:.2f} minutes')
+                                        df_failures = df[df['DriverNumber'] == driver_fail].copy()
+                                        print(f'df_failures: {df_failures.shape}')
+                                        cleaned_data_failures = self.normalize_data(df_failures, scaler_type)
 
-                    else:
-                        print('Skipping pre-season event...')
+                                        df_noFailures = df[df['DriverNumber'] != driver_fail].copy()
+                                        print(f'df_noFailures: {df_noFailures.shape}')
+                                        cleaned_data_noFailures = self.normalize_data(df_noFailures, scaler_type)
 
+                                        print('Saving cleaned data...')
+                                        stime = time.time()
+
+                                        np.savez_compressed(
+                                            f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                            data=cleaned_data_noFailures)
+                                        np.savez_compressed(
+                                            f'{output_folder}/train_data/train_data_only_failures/{year}_{event_name}_{scaler_type}_normalized_{driver_fail}_{problem_class}.npz',
+                                            data=cleaned_data_failures)
+                                        etime = time.time()
+                                        print(f'Done in {(etime - stime) / 60:.2f} minutes')
+                            if not failure_found:
+                                cleaned_data = self.normalize_data(df, scaler_type)
+                                print(f'Saving data...')
+                                stime = time.time()
+                                np.savez_compressed(
+                                    f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                    data=cleaned_data)
+                                etime = time.time()
+                                print(f'Done in {(etime - stime) / 60:.2f} minutes')
                 except Exception as e:
                     print(f'Error processing {file}: {e}')
 
 if __name__ == '__main__':
 
-    input_folder = '../temp'   # EDIT THIS PATH
-    output_folder = '../temp'  # EDIT THIS PATH
+    input_folder = 'D:/F1LLM_Datasets/npz_all_telemetry_data'   # EDIT THIS PATH
+    output_folder = 'D:/F1LLM_Datasets/npz_normalized'  # EDIT THIS PATH
 
     if not os.path.exists(input_folder):
         print('Input folder does not exist. Exiting...')
@@ -480,8 +511,8 @@ if __name__ == '__main__':
             os.makedirs(f'{output_folder}/train_data')
         if not os.path.exists(f'{output_folder}/train_data/train_data_without_failures'):
             os.makedirs(f'{output_folder}/train_data/train_data_without_failures')
-        if not os.path.exists(f'{output_folder}/train_data/train_data_with_failures'):
-            os.makedirs(f'{output_folder}/train_data/train_data_with_failures')
+        if not os.path.exists(f'{output_folder}/train_data/train_data_only_failures'):
+            os.makedirs(f'{output_folder}/train_data/train_data_only_failures')
 
         normalizer = Normalizer(input_folder, output_folder, pit_stops=False)
         normalizer.preprocessing_and_normalization()
@@ -513,6 +544,7 @@ if __name__ == '__main__':
         driver = input('Enter the driver name (first 3 letters): ')
         driver = driver.upper()
         event = input('Enter the event name: ')
+        event = event.replace(' ', '')
         year = input('Enter the year: ')
 
         if not os.path.exists(f'{output_folder}/test_data'):
