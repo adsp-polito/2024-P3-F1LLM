@@ -381,7 +381,7 @@ class Normalizer:
             year_folder_path = os.path.join(self.input_folder_path, year_folder)
 
             for file in os.listdir(year_folder_path):
-                try:
+                # try:
                     if not file.split('_')[1].startswith('Pre'):
 
                         year = int(file.split('_')[0])
@@ -442,10 +442,16 @@ class Normalizer:
                         else:
                             # Normalize the data for the entire event and year
                             failures_df = pd.read_csv('../Dataset/Failuers_grouped_2018_2024.csv') # TO BE CHANGED
-                            failures_of_year = failures_df[failures_df['Year'] == year] # TO BE CHANGED
+                            failures_of_year = failures_df[
+                                (failures_df['Year'] == year) &
+                                (failures_df['EventName'].str.replace(' ', '') == event_name)
+                                ]
+                            # TO BE CHANGED
+                            print(f'Found {failures_of_year.shape[0]} failures for {event_name} of {year}')
                             failure_found = False
 
                             if failures_of_year.shape[1] > 0:
+                                driver_failed_list = list(failures_of_year['DriverNumber'].unique())
                                 for failure in failures_of_year.iterrows():
                                     driver_fail, event_fail, year_fail, problem_class = (failure[1]['DriverNumber'], failure[1]['EventName'], failure[1]['Year'], failure[1]['ProblemClass'])
                                     event_fail = event_fail.replace(' ', '')
@@ -458,34 +464,65 @@ class Normalizer:
 
                                         df_failures = df[df['DriverNumber'] == driver_fail].copy()
                                         print(f'df_failures: {df_failures.shape}')
-                                        cleaned_data_failures = self.normalize_data(df_failures, scaler_type)
+                                        if df_failures.shape[0] > 0:
+                                            try:
+                                                cleaned_data_failures = self.normalize_data(df_failures, scaler_type)
+                                            except Exception as e:
+                                                # Save the error to a text file
+                                                error_message = f"{event_name}, {year}, failure({driver_fail}, {problem_class}): {str(e)}"
+                                                with open("D:/error_log.txt", "a") as error_file:
+                                                    error_file.write(error_message + "\n")
+                                                print("An error occurred. Details have been saved to 'error_log.txt'.")
+                                                continue
 
-                                        df_noFailures = df[df['DriverNumber'] != driver_fail].copy()
-                                        print(f'df_noFailures: {df_noFailures.shape}')
-                                        cleaned_data_noFailures = self.normalize_data(df_noFailures, scaler_type)
+                                            print(f'Saving failure data for {driver_fail} in {event_fail} of {year_fail}...')
+                                            stime = time.time()
+                                            np.savez_compressed(
+                                                f'{output_folder}/train_data/train_data_only_failures/{year}_{event_name}_{scaler_type}_normalized_{driver_fail}_{problem_class}.npz',
+                                                data=cleaned_data_failures)
 
-                                        print('Saving cleaned data...')
-                                        stime = time.time()
+                                            etime = time.time()
+                                            print(f'Done in {etime - stime:.2f} seconds')
 
-                                        np.savez_compressed(
-                                            f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
-                                            data=cleaned_data_noFailures)
-                                        np.savez_compressed(
-                                            f'{output_folder}/train_data/train_data_only_failures/{year}_{event_name}_{scaler_type}_normalized_{driver_fail}_{problem_class}.npz',
-                                            data=cleaned_data_failures)
-                                        etime = time.time()
-                                        print(f'Done in {(etime - stime) / 60:.2f} minutes')
+                                print(f'Saving {event_name} of {year}...')
+                                stime = time.time()
+                                print(f'df_without_failures before: {df.shape}')
+                                df_without_failures = df[~df['DriverNumber'].isin(driver_failed_list)].copy()
+                                print(f'df_without_failures after: {df_without_failures.shape}')
+                                try:
+                                    cleaned_data_without_failures = self.normalize_data(df_without_failures, scaler_type)
+                                except Exception as e:
+                                    # Save the error to a text file
+                                    error_message = f"{event_name}, {year}, train file without failures (removed): {str(e)}"
+                                    with open("D:/error_log.txt", "a") as error_file:
+                                        error_file.write(error_message + "\n")
+                                    print("An error occurred. Details have been saved to 'error_log.txt'.")
+                                    continue
+                                np.savez_compressed(
+                                    f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                    data=cleaned_data_without_failures)
+                                etime = time.time()
+                                print(f'Done in {etime - stime:.2f} seconds')
+
                             if not failure_found:
-                                cleaned_data = self.normalize_data(df, scaler_type)
-                                print(f'Saving data...')
+                                try:
+                                    cleaned_data = self.normalize_data(df, scaler_type)
+                                except Exception as e:
+                                    # Save the error to a text file
+                                    error_message = f"{event_name}, {year}, train file without failures (absent): {str(e)}"
+                                    with open("D:/error_log.txt", "a") as error_file:
+                                        error_file.write(error_message + "\n")
+                                    print("An error occurred. Details have been saved to 'error_log.txt'.")
+                                    continue
+                                print(f'Saving {event_name} data of {year}...')
                                 stime = time.time()
                                 np.savez_compressed(
                                     f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
                                     data=cleaned_data)
                                 etime = time.time()
-                                print(f'Done in {(etime - stime) / 60:.2f} minutes')
-                except Exception as e:
-                    print(f'Error processing {file}: {e}')
+                                print(f'Done in {etime - stime:.2f} seconds')
+                # except Exception as e:
+                #     print(f'Error processing {file}: {e}')
 
 if __name__ == '__main__':
 
