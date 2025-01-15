@@ -1,5 +1,4 @@
 import time
-import joblib
 import numpy as np
 
 import os
@@ -10,11 +9,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from torch.amp import GradScaler
-
 import matplotlib.pyplot as plt
-
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.model_selection import KFold, train_test_split
+from sklearn.model_selection import KFold
 from tqdm import tqdm
 
 
@@ -46,7 +42,6 @@ def load_data(folder_path):
     print(f'Concatenating data...')
     np_data = np.concatenate(all_data, axis=0)
   
-    # np_data = np.load('anomaly_normalized/2019_AD_normalized.npz', allow_pickle=True)['data']
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f'Dataset loaded in: {elapsed_time:.2f} seconds')
@@ -250,7 +245,7 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
     else:
         raise ValueError("Invalid optimizer name. Use 'Adam', 'AdamW', or 'SGD'.")
 
-    history = {"loss": [], "val_loss": [], "MAE": [], "threshold95": None, "threshold99": None, "threshold99_5": None}
+    history = {"loss": [], "val_loss": [], "reconstruction_error": [], "threshold95": None, "threshold99": None, "threshold99_5": None, "threshold99_9": None}
     reconstruction_errors = []
 
     for epoch in range(1, epochs + 1):
@@ -275,6 +270,8 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
 
         train_loss /= len(train_loader)
         history["loss"].append(train_loss)
+        reconstruction_error /= len(train_loader)
+        history["reconstruction_error"].append(reconstruction_error)
 
         if epoch % validation_freq == 0 or epoch == epochs or epoch == 1:
             autoencoder.eval()
@@ -287,9 +284,7 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
                     val_loss += loss.item()
 
             val_loss /= len(val_loader)
-            reconstruction_error /= len(train_loader)
             history["val_loss"].append(val_loss)
-            history["reconstruction_error"].append(reconstruction_error)
             print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Recon Error: {reconstruction_error:.4f}")
         else:
             history["val_loss"].append(None)
@@ -297,22 +292,24 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
 
         # Libera la memoria non utilizzata
         torch.cuda.empty_cache()
-        print(torch.cuda.memory_summary(device=None, abbreviated=True))
+        # print(torch.cuda.memory_summary(device=None, abbreviated=True))
 
         # Save the trained model
         print("Saving the trained model...")
         learning_rate_str = str(learning_rate).split(".")[1]
-        torch.save(autoencoder.state_dict(), f"saved_models/kfold_models/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
+        torch.save(autoencoder.state_dict(), f"saved_models/v2/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
         print("Model saved.")
 
     # Calculate the 95th percentile threshold from reconstruction errors
     threshold95 = np.percentile(reconstruction_errors, 95)
     threshold99 = np.percentile(reconstruction_errors, 99)
-    threshold99_5 = np.percentile(reconstruction_errors, 95.5)
+    threshold99_5 = np.percentile(reconstruction_errors, 99.5)
+    threshold99_9 = np.percentile(reconstruction_errors, 99.9)
     history["threshold95"] = threshold95
     history["threshold99"] = threshold99
     history["threshold99_5"] = threshold99_5
-    print(f"Calculated percentile thresholds:\n95th :{threshold95:.4f}, 99th: {threshold99:.4f}, 99.5th: {threshold99_5:.4f}")
+    history["threshold99_9"] = threshold99_9
+    print(f"Calculated percentile thresholds:\n95th: {threshold95:.4f}, 99th: {threshold99:.4f}, 99.5th: {threshold99_5:.4f}, 99.9th: {threshold99_9:.4f}")
 
     return history
 
@@ -367,10 +364,10 @@ def cross_validate_autoencoder(autoencoder_class, data, k_folds, sequence_length
         learning_rate_str = str(learning_rate).split(".")[1]
 
         # Optionally, save the model for each fold
-        torch.save(autoencoder.state_dict(), f"saved_models/kfold_models/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_loss{history['loss'][-1]:.4f}_fold{fold + 1}.pth")
+        torch.save(autoencoder.state_dict(), f"saved_models/v2/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_loss{history['loss'][-1]:.4f}_fold{fold + 1}.pth")
         print(f"Model for fold {fold + 1} saved.")
     
-    return histories
+    return histories_list
 
 # Main function
 if __name__ == "__main__":
@@ -382,14 +379,10 @@ if __name__ == "__main__":
     print(f"Device: {device}")
 
     # Path to the dataset
-    dataset_path = "AD_noFailures_normalized/MinMaxScaler"
+    dataset_path = "D:/F1LLM_Datasets/npz_normalized/train_data/train_data_without_failures"
 
     # Load and preprocess data
     data = load_data(dataset_path)
-
-    # Check for NaNs or infinite values
-    print("Any NaNs in dataset:", np.isnan(data).any())
-    print("Any Infs in dataset:", np.isinf(data).any())
 
     # Parameters
     sequence_length = 20
