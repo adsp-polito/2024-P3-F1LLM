@@ -237,25 +237,36 @@ class LSTMAutoencoder(nn.Module):
         return x
 
 
-def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion, optimizer_name='Adam'):
+def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion, optimizer_name='Adam', scheduler_name='StepLR', step_size=10, gamma=0.1):
     scaler = GradScaler('cuda')
+
+    # Set up optimizer
     if optimizer_name == 'Adam':
         optimizer = optim.Adam(autoencoder.parameters(), lr=learning_rate)
     elif optimizer_name == 'AdamW':
         optimizer = optim.AdamW(autoencoder.parameters(), lr=learning_rate)
     elif optimizer_name == 'SGD':
         optimizer = optim.SGD(autoencoder.parameters(), lr=learning_rate, momentum=0.9)
+    else:
+        raise ValueError("Invalid optimizer name. Use 'Adam', 'AdamW', or 'SGD'.")
 
-    history = {"loss": [], "val_loss": []}
+    history = {"loss": [], "val_loss": [], "MAE": [], "threshold95": None, "threshold99": None, "threshold99_5": None}
+    reconstruction_errors = []
 
     for epoch in range(1, epochs + 1):
         autoencoder.train()
         train_loss = 0
+        reconstruction_error = 0
         for batch in tqdm(train_loader, desc=f"Epoch {epoch}/{epochs}"):
             batch = batch.to(device)
             optimizer.zero_grad()
             outputs = autoencoder(batch)
             loss = criterion(outputs, batch)
+
+            # Compute MAE for reconstruction error
+            mae = torch.mean(torch.abs(outputs - batch)).item()
+            reconstruction_error += mae
+            reconstruction_errors.append(mae)
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -276,11 +287,13 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
                     val_loss += loss.item()
 
             val_loss /= len(val_loader)
+            reconstruction_error /= len(train_loader)
             history["val_loss"].append(val_loss)
-            print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+            history["reconstruction_error"].append(reconstruction_error)
+            print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Recon Error: {reconstruction_error:.4f}")
         else:
             history["val_loss"].append(None)
-            print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Validation skipped.")
+            print(f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Recon Error: {reconstruction_error:.4f}")
 
         # Libera la memoria non utilizzata
         torch.cuda.empty_cache()
@@ -291,32 +304,18 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
         learning_rate_str = str(learning_rate).split(".")[1]
         torch.save(autoencoder.state_dict(), f"saved_models/kfold_models/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
         print("Model saved.")
-        
+
+    # Calculate the 95th percentile threshold from reconstruction errors
+    threshold95 = np.percentile(reconstruction_errors, 95)
+    threshold99 = np.percentile(reconstruction_errors, 99)
+    threshold99_5 = np.percentile(reconstruction_errors, 95.5)
+    history["threshold95"] = threshold95
+    history["threshold99"] = threshold99
+    history["threshold99_5"] = threshold99_5
+    print(f"Calculated percentile thresholds:\n95th :{threshold95:.4f}, 99th: {threshold99:.4f}, 99.5th: {threshold99_5:.4f}")
+
     return history
 
-
-# def evaluate_model(autoencoder, X_test, y_test, threshold, reconstruction_error):
-#     """
-#     Evaluates the anomaly detection performance of the autoencoder.
-    
-#     Args:
-#         autoencoder (Model): Trained autoencoder.
-#         X_test (ndarray): Test data.
-#         y_test (ndarray): Ground truth labels (1 for anomaly, 0 for normal).
-#         threshold (float): Anomaly detection threshold.
-    
-#     Returns:
-#         dict: Precision, Recall, F1 Score, and AUC.
-#     """
-#     predictions = (reconstruction_error > threshold).astype(int)
-    
-#     metrics = {
-#         "Precision": precision_score(y_test, predictions),
-#         "Recall": recall_score(y_test, predictions),
-#         "F1 Score": f1_score(y_test, predictions),
-#         "AUC": roc_auc_score(y_test, reconstruction_error),
-#     }
-#     return metrics
 
 def cross_validate_autoencoder(autoencoder_class, data, k_folds, sequence_length, batch_size, epochs, 
                                validation_freq, device, learning_rate, criterion, optimizer_name):
@@ -340,7 +339,7 @@ def cross_validate_autoencoder(autoencoder_class, data, k_folds, sequence_length
         list: Training histories for each fold.
     """
     kfold = KFold(n_splits=k_folds, shuffle=True, random_state=42)
-    histories = []
+    histories_list = []
 
     for fold, (train_indices, val_indices) in enumerate(kfold.split(data)):
         print(f"\n--- Fold {fold + 1}/{k_folds} ---\n")
@@ -363,7 +362,7 @@ def cross_validate_autoencoder(autoencoder_class, data, k_folds, sequence_length
                                     device, learning_rate, criterion, optimizer_name)
         
         # Store the training history
-        histories.append(history)
+        histories_list.append(history)
 
         learning_rate_str = str(learning_rate).split(".")[1]
 
@@ -407,8 +406,39 @@ if __name__ == "__main__":
                                            batch_size, epochs, validation_freq, device, 
                                            learning_rate, criterion, optimizer_name)
     
-    # Plot training histories for each fold
-    # for fold, history in enumerate(histories):
-    #     print(f"\n--- Diagnostics for Fold {fold + 1} ---\n")
-    #     training_diagnostics(None, history, None, sequence_length)  # Replace None
-    
+    # Function to plot histories
+    def plot_histories(histories_list):
+        """
+        Plots the training and validation loss for each fold.
+
+        Args:
+            histories_list (list): List of history dictionaries from each fold.
+        """
+        # Plot Training and Validation Loss
+        plt.figure(figsize=(12, 6))
+        for fold, history in enumerate(histories):
+            plt.plot(history['loss'], label=f'Fold {fold + 1} Train Loss')
+            if any(val is not None for val in history['val_loss']):
+                val_loss = [val if val is not None else float('nan') for val in history['val_loss']]
+                plt.plot(val_loss, label=f'Fold {fold + 1} Val Loss', linestyle='--')
+
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Training and Validation Loss for Each Fold')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig('AD_19-23_autoencoder_loss.png')
+        plt.show()
+
+        # Plot MAE
+        plt.figure(figsize=(12, 6))
+        for fold, history in enumerate(histories):
+            plt.plot(history['MAE'], label=f'Fold {fold + 1} MAE')
+
+        plt.xlabel('Epochs')
+        plt.ylabel('Mean Absolute Error (MAE)')
+        plt.title('Mean Absolute Error for Each Fold')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig('AD_19-23_autoencoder_MAE.png')
+        plt.show()
