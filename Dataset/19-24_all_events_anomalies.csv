@@ -1,0 +1,194 @@
+DriverNumber,EventName,Year,Status,ProblemClass
+8,Australian Grand Prix,2019,Wheel,Aerodynamics and Tyres
+3,Australian Grand Prix,2019,Damage,Aerodynamics and Tyres
+55,Australian Grand Prix,2019,Engine,Engine
+27,Bahrain Grand Prix,2019,Engine,Engine
+3,Bahrain Grand Prix,2019,Out of fuel,Others
+27,Chinese Grand Prix,2019,Power Unit,Power Unit
+10,Azerbaijan Grand Prix,2019,Transmission,Transmission and Gearbox
+8,Azerbaijan Grand Prix,2019,Brakes,Braking System
+4,Canadian Grand Prix,2019,Suspension,Suspension and Drive
+4,German Grand Prix,2019,Power loss,Power Unit
+3,German Grand Prix,2019,Exhaust,Others
+8,Hungarian Grand Prix,2019,Water pressure,Cooling System
+4,Belgian Grand Prix,2019,Engine,Engine
+55,Belgian Grand Prix,2019,Power loss,Power Unit
+20,Italian Grand Prix,2019,Hydraulics,Suspension and Drive
+26,Italian Grand Prix,2019,Engine,Engine
+55,Italian Grand Prix,2019,Wheel,Aerodynamics and Tyres
+11,Singapore Grand Prix,2019,Engine,Engine
+88,Russian Grand Prix,2019,Brakes,Braking System
+63,Russian Grand Prix,2019,Brakes,Braking System
+5,Russian Grand Prix,2019,Power loss,Power Unit
+33,Japanese Grand Prix,2019,Brakes,Braking System
+7,Mexican Grand Prix,2019,Overheating,Cooling System
+10,United States Grand Prix,2019,Suspension,Suspension and Drive
+20,United States Grand Prix,2019,Brakes,Braking System
+88,United States Grand Prix,2019,Oil leak,Others
+5,United States Grand Prix,2019,Suspension,Suspension and Drive
+18,Brazilian Grand Prix,2019,Suspension,Suspension and Drive
+77,Brazilian Grand Prix,2019,Power Unit,Power Unit
+18,Abu Dhabi Grand Prix,2019,Brakes,Braking System
+26,Austrian Grand Prix,2020,Suspension,Suspension and Drive
+23,Austrian Grand Prix,2020,Electronics,Others
+7,Austrian Grand Prix,2020,Wheel,Aerodynamics and Tyres
+63,Austrian Grand Prix,2020,Fuel pressure,Others
+8,Austrian Grand Prix,2020,Brakes,Braking System
+20,Austrian Grand Prix,2020,Brakes,Braking System
+18,Austrian Grand Prix,2020,Engine,Engine
+3,Austrian Grand Prix,2020,Overheating,Cooling System
+33,Austrian Grand Prix,2020,Electronics,Others
+26,Austrian Grand Prix,2020,Suspension,Suspension and Drive
+23,Austrian Grand Prix,2020,Electronics,Others
+7,Austrian Grand Prix,2020,Wheel,Aerodynamics and Tyres
+63,Austrian Grand Prix,2020,Fuel pressure,Others
+8,Austrian Grand Prix,2020,Brakes,Braking System
+20,Austrian Grand Prix,2020,Brakes,Braking System
+18,Austrian Grand Prix,2020,Engine,Engine
+3,Austrian Grand Prix,2020,Overheating,Cooling System
+33,Austrian Grand Prix,2020,Electronics,Others
+26,Austrian Grand Prix,2020,Suspension,Suspension and Drive
+23,Austrian Grand Prix,2020,Electronics,Others
+7,Austrian Grand Prix,2020,Wheel,Aerodynamics and Tyres
+63,Austrian Grand Prix,2020,Fuel pressure,Others
+8,Austrian Grand Prix,2020,Brakes,Braking System
+20,Austrian Grand Prix,2020,Brakes,Braking System
+18,Austrian Grand Prix,2020,Engine,Engine
+3,Austrian Grand Prix,2020,Overheating,Cooling System
+33,Austrian Grand Prix,2020,Electronics,Others
+31,Styrian Grand Prix,2020,Overheating,Cooling System
+10,Hungarian Grand Prix,2020,Engine,Engine
+27,British Grand Prix,2020,Power Unit,Power Unit
+16,Spanish Grand Prix,2020,Electronics,Others
+55,Belgian Grand Prix,2020,Exhaust,Others
+33,Italian Grand Prix,2020,Power Unit,Power Unit
+20,Italian Grand Prix,2020,Power Unit,Power Unit
+5,Italian Grand Prix,2020,Brakes,Braking System
+18,Tuscan Grand Prix,2020,Puncture,Aerodynamics and Tyres
+31,Tuscan Grand Prix,2020,Brakes,Braking System
+4,Eifel Grand Prix,2020,Power Unit,Power Unit
+23,Eifel Grand Prix,2020,Radiator,Cooling System
+31,Eifel Grand Prix,2020,Gearbox,Transmission and Gearbox
+77,Eifel Grand Prix,2020,Power Unit,Power Unit
+33,Emilia Romagna Grand Prix,2020,Puncture,Aerodynamics and Tyres
+31,Emilia Romagna Grand Prix,2020,Gearbox,Transmission and Gearbox
+10,Emilia Romagna Grand Prix,2020,Water pressure,Cooling System
+99,Turkish Grand Prix,2020,Gearbox,Transmission and Gearbox
+11,Bahrain Grand Prix,2020,Engine,Engine
+6,Sakhir Grand Prix,2020,Engine,Engine
+11,Abu Dhabi Grand Prix,2020,Transmission,Transmission and Gearbox
+14,United States Grand Prix,2021,Rear wing,Aerodynamics and Tyres
+31,United States Grand Prix,2021,Mechanical,Others
+10,United States Grand Prix,2021,Suspension,Suspension and Drive
+14,Bahrain Grand Prix,2021,Brakes,Braking System
+5,Emilia Romagna Grand Prix,2021,Gearbox,Transmission and Gearbox
+22,Spanish Grand Prix,2021,Electrical,Others
+16,Monaco Grand Prix,2021,Driveshaft,Suspension and Drive
+63,Azerbaijan Grand Prix,2021,Gearbox,Transmission and Gearbox
+31,Azerbaijan Grand Prix,2021,Turbo,Power Unit
+63,Styrian Grand Prix,2021,Engine,Engine
+63,Dutch Grand Prix,2021,Gearbox,Transmission and Gearbox
+22,Dutch Grand Prix,2021,Power Unit,Power Unit
+9,Dutch Grand Prix,2021,Hydraulics,Suspension and Drive
+9,Italian Grand Prix,2021,Power Unit,Power Unit
+10,Italian Grand Prix,2021,Suspension,Suspension and Drive
+22,Italian Grand Prix,2021,Brakes,Braking System
+47,Russian Grand Prix,2021,Oil leak,Others
+14,United States Grand Prix,2021,Rear wing,Aerodynamics and Tyres
+31,United States Grand Prix,2021,Mechanical,Others
+10,United States Grand Prix,2021,Suspension,Suspension and Drive
+3,São Paulo Grand Prix,2021,Power loss,Power Unit
+6,Qatar Grand Prix,2021,Puncture,Aerodynamics and Tyres
+77,Qatar Grand Prix,2021,Damage,Aerodynamics and Tyres
+11,Abu Dhabi Grand Prix,2021,Engine,Engine
+99,Abu Dhabi Grand Prix,2021,Gearbox,Transmission and Gearbox
+63,Abu Dhabi Grand Prix,2021,Gearbox,Transmission and Gearbox
+7,Abu Dhabi Grand Prix,2021,Brakes,Braking System
+31,British Grand Prix,2022,Fuel pump,Others
+77,British Grand Prix,2022,Gearbox,Transmission and Gearbox
+11,Bahrain Grand Prix,2022,Fuel pressure,Others
+1,Bahrain Grand Prix,2022,Fuel pressure,Others
+10,Bahrain Grand Prix,2022,Power Unit,Power Unit
+77,Saudi Arabian Grand Prix,2022,Cooling system,Cooling System
+14,Saudi Arabian Grand Prix,2022,Water pump,Cooling System
+3,Saudi Arabian Grand Prix,2022,Gearbox,Transmission and Gearbox
+22,Saudi Arabian Grand Prix,2022,Power Unit,Power Unit
+1,Australian Grand Prix,2022,Fuel leak,Others
+20,Miami Grand Prix,2022,Front wing,Aerodynamics and Tyres
+10,Miami Grand Prix,2022,Suspension,Suspension and Drive
+24,Miami Grand Prix,2022,Water leak,Cooling System
+24,Spanish Grand Prix,2022,Power loss,Power Unit
+16,Spanish Grand Prix,2022,Turbo,Power Unit
+23,Monaco Grand Prix,2022,Mechanical,Others
+20,Monaco Grand Prix,2022,Water pressure,Cooling System
+18,Azerbaijan Grand Prix,2022,Vibrations,Suspension and Drive
+20,Azerbaijan Grand Prix,2022,Power Unit,Power Unit
+24,Azerbaijan Grand Prix,2022,Hydraulics,Suspension and Drive
+16,Azerbaijan Grand Prix,2022,Power Unit,Power Unit
+55,Azerbaijan Grand Prix,2022,Hydraulics,Suspension and Drive
+47,Canadian Grand Prix,2022,Engine,Engine
+11,Canadian Grand Prix,2022,Gearbox,Transmission and Gearbox
+31,British Grand Prix,2022,Fuel pump,Others
+77,British Grand Prix,2022,Gearbox,Transmission and Gearbox
+55,Austrian Grand Prix,2022,Power Unit,Power Unit
+6,Austrian Grand Prix,2022,Undertray,Aerodynamics and Tyres
+22,French Grand Prix,2022,Undertray,Aerodynamics and Tyres
+77,Hungarian Grand Prix,2022,Power Unit,Power Unit
+77,Dutch Grand Prix,2022,Engine,Engine
+22,Dutch Grand Prix,2022,Differential,Suspension and Drive
+3,Italian Grand Prix,2022,Oil leak,Others
+18,Italian Grand Prix,2022,Engine,Engine
+14,Italian Grand Prix,2022,Water pressure,Cooling System
+5,Italian Grand Prix,2022,Engine,Engine
+31,Singapore Grand Prix,2022,Engine,Engine
+14,Singapore Grand Prix,2022,Engine,Engine
+23,Japanese Grand Prix,2022,Hydraulics,Suspension and Drive
+14,Mexico City Grand Prix,2022,Engine,Engine
+4,São Paulo Grand Prix,2022,Gearbox,Transmission and Gearbox
+44,Abu Dhabi Grand Prix,2022,Hydraulics,Suspension and Drive
+14,Abu Dhabi Grand Prix,2022,Water leak,Cooling System
+20,British Grand Prix,2023,Engine,Engine
+31,British Grand Prix,2023,Oil leak,Others
+31,Bahrain Grand Prix,2023,Mechanical,Others
+16,Bahrain Grand Prix,2023,Engine,Engine
+81,Bahrain Grand Prix,2023,Electrical,Others
+23,Saudi Arabian Grand Prix,2023,Brakes,Braking System
+18,Saudi Arabian Grand Prix,2023,Engine,Engine
+63,Australian Grand Prix,2023,Engine,Engine
+24,Azerbaijan Grand Prix,2023,Overheating,Cooling System
+63,Canadian Grand Prix,2023,Brakes,Braking System
+2,Canadian Grand Prix,2023,Engine,Engine
+27,Austrian Grand Prix,2023,Power loss,Power Unit
+20,British Grand Prix,2023,Engine,Engine
+31,British Grand Prix,2023,Oil leak,Others
+16,Dutch Grand Prix,2023,Undertray,Aerodynamics and Tyres
+31,Italian Grand Prix,2023,Steering,Suspension and Drive
+22,Italian Grand Prix,2023,Engine,Engine
+77,Singapore Grand Prix,2023,Technical,Others
+31,Singapore Grand Prix,2023,Gearbox,Transmission and Gearbox
+18,Japanese Grand Prix,2023,Rear wing,Aerodynamics and Tyres
+55,Qatar Grand Prix,2023,Fuel leak,Others
+14,United States Grand Prix,2023,Undertray,Aerodynamics and Tyres
+81,United States Grand Prix,2023,Radiator,Cooling System
+63,São Paulo Grand Prix,2023,Overheating,Cooling System
+77,São Paulo Grand Prix,2023,Engine,Engine
+24,São Paulo Grand Prix,2023,Engine,Engine
+16,São Paulo Grand Prix,2023,Engine,Engine
+22,Las Vegas Grand Prix,2023,Gearbox,Transmission and Gearbox
+27,Las Vegas Grand Prix,2023,Engine,Engine
+23,Singapore Grand Prix,2024,Power Unit,Power Unit
+10,Saudi Arabian Grand Prix,2024,Gearbox,Transmission and Gearbox
+44,Australian Grand Prix,2024,Engine,Engine
+1,Australian Grand Prix,2024,Brakes,Braking System
+24,Japanese Grand Prix,2024,Gearbox,Transmission and Gearbox
+16,Canadian Grand Prix,2024,Engine,Engine
+63,British Grand Prix,2024,Water pressure,Cooling System
+10,British Grand Prix,2024,Gearbox,Transmission and Gearbox
+10,Hungarian Grand Prix,2024,Hydraulics,Suspension and Drive
+22,Italian Grand Prix,2024,Overheating,Cooling System
+23,Singapore Grand Prix,2024,Power Unit,Power Unit
+14,Mexico City Grand Prix,2024,Brakes,Braking System
+23,Las Vegas Grand Prix,2024,Radiator,Cooling System
+10,Las Vegas Grand Prix,2024,Engine,Engine
+30,Abu Dhabi Grand Prix,2024,Engine,Engine
+43,Abu Dhabi Grand Prix,2024,Engine,Engine
