@@ -22,3 +22,6 @@ saved_models
 anomaly_detection/*.npz
 *.pth
 Dataset/OnlyFailuresByDriver/npz_failures/*.npz
+.env
+LLM/.gradio
+LLM/gpt-neo-1.3B_model
