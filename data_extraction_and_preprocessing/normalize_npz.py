@@ -9,14 +9,12 @@ import os
 
 
 class Normalizer:
-    def __init__(self, input_folder, output_folder, pit_stops=False, given_driver=None, given_year=None, given_event=None):
-        self.pit_stops = pit_stops
-
-        self.input_folder_path = input_folder
-        self.output_folder_path = output_folder
+    def __init__(self, input_folder_path, output_folder_path, given_driver=None, given_year=None, given_event=None):
+        self.input_folder_path = input_folder_path
+        self.output_folder_path = output_folder_path
 
         self.given_driver = given_driver
-        self.given_year = given_year
+        self.given_year = self.given_year = int(given_year) if given_year is not None else None
         self.given_event = given_event
 
     def convert_time_to_seconds(self, df, col):
@@ -139,13 +137,13 @@ class Normalizer:
 
             'Failure':{
                 'Others': 0,
-                'Braking System': 1,
+                'BrakingSystem': 1,
                 'Engine': 2,
-                'Power Unit': 3,
-                'Cooling System': 4,
-                'Suspension and Drive': 5,
-                'Aerodynamics and Tyres': 6,
-                'Transmission and Gearbox': 7,
+                'PowerUnit': 3,
+                'CoolingSystem': 4,
+                'SuspensionandDrive': 5,
+                'AerodynamicsandTyres': 6,
+                'TransmissionandGearbox': 7,
             }
         }
         df = df.dropna(subset=['Compound'])
@@ -161,7 +159,7 @@ class Normalizer:
         df = df.dropna(subset=['DRS'])
         return df
 
-    def normalize_data(self, df, scaler_type="MinMaxScaler"):
+    def normalize_data(self, df, scaler_type="MinMaxScaler", include_not_accurate_and_pit=False):
         """
         Features are handled as follows:
         1. Numerical features: Standardized using `StandardScaler` to ensure all values are on the same scale.
@@ -184,6 +182,7 @@ class Normalizer:
         Returns:
             np.array: Preprocessed dataset, combining standardized numerical features,
                     one-hot encoded categorical features, and unprocessed features.
+                    :param include_not_accurate_and_pit:
                     :param scaler_type:
         """
 
@@ -197,7 +196,11 @@ class Normalizer:
 
         # List of time columns to convert
         time_columns = [
-            'SessionTime', 'Time', 'LapTime', 'PitOutTime', 'PitInTime'
+            'SessionTime',
+            'Time',
+            # 'LapTime',
+            # 'PitOutTime',
+            # 'PitInTime'
         ]
 
         # Convert all time columns to seconds
@@ -209,7 +212,7 @@ class Normalizer:
         numerical_cols = [
             'SessionTime_in_ms',
             'Time_in_ms',
-            'LapTime_in_ms',
+            # 'LapTime_in_ms',
             'LapNumber',
             'Position',
             'Speed',
@@ -231,28 +234,27 @@ class Normalizer:
         ]
 
         df.dropna(subset=['Time_in_ms'], inplace=True)
-        df.dropna(subset=['LapTime_in_ms'], inplace=True)
-
+        # df.dropna(subset=['LapTime_in_ms'], inplace=True)
 
         # Compute the set of pit stops for each driver
-        if not self.pit_stops:
-            driver_pit_laps = {
-            driver: set(df[(df['DriverNumber'] == driver) & (df['PitInTime_in_ms'].notna())]['LapNumber'])
-            .union(df[(df['DriverNumber'] == driver) & (df['PitOutTime_in_ms'].notna())]['LapNumber'])
-            for driver in df['DriverNumber'].unique()
-            }
-
-            # Filter dataset using the precomputed mapping
-            df = df[~df.apply(
-            lambda row: row['LapNumber'] in driver_pit_laps[row['DriverNumber']],
-            axis=1
-            )]
+        # if not pit_stops:
+        #     driver_pit_laps = {
+        #     driver: set(df[(df['DriverNumber'] == driver) & (df['PitInTime_in_ms'].notna())]['LapNumber'])
+        #     .union(df[(df['DriverNumber'] == driver) & (df['PitOutTime_in_ms'].notna())]['LapNumber'])
+        #     for driver in df['DriverNumber'].unique()
+        #     }
+        #
+        #     # Filter dataset using the precomputed mapping
+        #     df = df[~df.apply(
+        #         lambda row: row['LapNumber'] in driver_pit_laps[row['DriverNumber']],
+        #         axis=1)]
 
         # One-hot encode 'Compound'
         if 'Compound' in df.columns:
             df = df[df['Compound'] != 'UNKNOWN'] # remove UNKNOWN compound records
 
-        if 'IsAccurate' in df.columns:
+
+        if 'IsAccurate' in df.columns and not include_not_accurate_and_pit:
             df = df[df['IsAccurate'] == True]
 
         # Map Team and Event
@@ -260,12 +262,12 @@ class Normalizer:
 
         # Columns to drop (irrelevant or redundant)
         drop_cols = [
-            'Time_x', 'Driver', 'DriverNumber', 'Stint', 'PitOutTime_in_ms', 'PitInTime_in_ms',
+            'Time_x', 'Driver', 'DriverNumber', 'Stint', 'PitOutTime', 'PitInTime',
             'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
             'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
             'FreshTyre', 'LapStartTime', 'LapStartDate', 'Deleted', 'DeletedReason', 'FastF1Generated',
             'IsAccurate', 'Compound_y', 'TyreLife_y', 'Time_y', 'Date', 'SessionTime', 'Source',
-            'RelativeDistance', 'Status', 'Year'
+            'RelativeDistance', 'Status', 'Year', 'LapTime'
         ]
 
         # Drop irrelevant columns if they exist in the dataset
@@ -279,6 +281,8 @@ class Normalizer:
 
         df['DriverAhead'] = df['DriverAhead'].replace('', np.nan)
         df = df.dropna(subset=['DriverAhead'])
+        df['TrackStatus'] = df['TrackStatus'].replace('', np.nan)
+        df = df.dropna(subset=['TrackStatus'])
 
         df['DriverAhead'] = df['DriverAhead'].astype('int8')
         df['DistanceToDriverAhead'] = df['DistanceToDriverAhead'].astype(float).replace([np.inf, -np.inf], np.nan)
@@ -313,7 +317,7 @@ class Normalizer:
         print(f"Preprocessing took {elapsed_time:.2f} minutes.")
         return processed_data
 
-    def preprocessing_and_normalization(self, scaler_type="MinMaxScaler", normalize_by_driver=False):
+    def preprocessing_and_normalization(self, include_not_accurate_and_pit, scaler_type="MinMaxScaler", normalize_by_driver=False, save_to_file=True):
 
         all_columns = [
             'Time_x', 'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
@@ -327,53 +331,6 @@ class Normalizer:
             'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
         ]
 
-        dtype_dict = {
-            "Driver": 'category',
-            "DriverNumber": 'category',
-            "LapNumber": 'int8',
-            "Compound_x": 'category',
-            "Compound_y": 'category',
-            "TyreLife_x": 'int8',
-            "TyreLife_y": 'int8',
-            "Team": 'category',
-            "TrackStatus": 'category',
-            "Position": 'int8',
-            "AirTemp": 'float16',
-            "Humidity": 'float16',
-            "Pressure": 'float16',
-            "Rainfall": bool,
-            "TrackTemp": 'float16',
-            "WindDirection": 'float16',
-            "WindSpeed": 'float16',
-            "DistanceToDriverAhead": 'float32',
-            "RPM": 'int16',
-            "Speed": 'int16',
-            "nGear": 'int8',
-            "Throttle": 'int8',
-            "Brake": bool,
-            "DRS": 'int8',
-            "Distance": 'float32',
-            "X": 'float32',
-            "Y": 'float32',
-            "Z": 'float32',
-            "Event": 'category',
-
-            'PitOutTime': object,
-            'PitInTime': object,
-            "LapTime": object,
-            "Time": object,
-
-            'IsPersonalBest': bool,
-            'FreshTyre': bool,
-            'FastF1Generated': bool,
-            'IsAccurate': bool,
-            'Source': 'category',
-            'Deleted': bool,
-            'DeletedReason': 'category',
-            'Year': 'int16',
-            'RelativeDistance': float
-        }
-
         if not os.path.exists(self.output_folder_path):
             os.makedirs(self.output_folder_path)
 
@@ -381,148 +338,148 @@ class Normalizer:
             year_folder_path = os.path.join(self.input_folder_path, year_folder)
 
             for file in os.listdir(year_folder_path):
-                # try:
-                    if not file.split('_')[1].startswith('Pre'):
+                if not file.split('_')[1].startswith('Pre'):
 
-                        year = int(file.split('_')[0])
-                        event_name = file.split('_')[1].split('.')[0]
+                    year = int(file.split('_')[0])
+                    event_name = file.split('_')[1].split('.')[0]
 
-                        if self.given_event is not None and self.given_year is not None:
-                            if self.given_event.lower() != event_name.lower() or self.given_year != year:
-                                continue
+                    if self.given_event is not None and self.given_year is not None:
+                        if self.given_event.lower() != event_name.lower() or self.given_year != year:
+                            continue
 
-                        print(f'Loading {event_name} of {year}...')
+                    print(f'Loading {event_name} of {year}...')
 
-                        data_path = os.path.join(year_folder_path, file)
-                        np_data = np.load(data_path, allow_pickle=True)['data']
+                    data_path = os.path.join(year_folder_path, file)
+                    np_data = np.load(data_path, allow_pickle=True)['data']
 
-                        print(f'Loaded! Converting to dataframe...')
+                    print(f'Loaded! Converting to dataframe...')
 
-                        df = pd.DataFrame(np_data, columns=all_columns)
-                        # df = df.astype(dtype_dict)
+                    df = pd.DataFrame(np_data, columns=all_columns)
 
-                        print(f'Done!')
+                    print(f'Done!')
 
-                        if self.given_event is not None and self.given_year is not None and self.given_driver is not None:
-                            if event_name.lower() == self.given_event.lower() and year == self.given_year:
+                    if self.given_event is not None and self.given_year is not None and self.given_driver is not None:
+                        if event_name.lower() == self.given_event.lower() and year == self.given_year:
 
-                                for driver in df['Driver'].unique():
-
-                                    # Filter the DataFrame for the current driver
-                                    if driver == self.given_driver:
-                                        driver_df = df[df['Driver'] == driver].copy()
-
-                                        # Normalize the data for the current driver
-                                        cleaned_data = self.normalize_data(driver_df, scaler_type)
-
-                                        print(f'Saving cleaned data for {driver}...')
-
-                                        # Save the cleaned and normalized data for the current driver
-                                        np.savez_compressed(
-                                            f'{self.output_folder_path}/test_data/selected_driver/{year}_{event_name}_{scaler_type}_{driver}_normalized_complete_wPits.npz',
-                                            data=cleaned_data
-                                        )
-
-                        elif normalize_by_driver:
                             for driver in df['Driver'].unique():
 
                                 # Filter the DataFrame for the current driver
-                                driver_df = df[df['Driver'] == driver].copy()
+                                if driver == self.given_driver:
+                                    driver_df = df[df['Driver'] == driver].copy()
 
-                                # Normalize the data for the current driver
-                                cleaned_data = self.normalize_data(driver_df, scaler_type)
+                                    # Normalize the data for the current driver
+                                    cleaned_data = self.normalize_data(driver_df, scaler_type, include_not_accurate_and_pit=include_not_accurate_and_pit)
 
-                                print(f'Saving cleaned data for {driver}...')
+                                    print(f'Saving cleaned data for {driver}...')
 
-                                # Save the cleaned and normalized data for the current driver
-                                np.savez_compressed(
-                                    f'{self.output_folder_path}/test_data/normalized_data_by_driver/{year}_{event_name}_{scaler_type}_{driver}_normalized_complete_wPits.npz',
-                                    data=cleaned_data
-                                )
-                        else:
-                            # Normalize the data for the entire event and year
-                            failures_df = pd.read_csv('../Dataset/Failuers_grouped_2018_2024.csv') # TO BE CHANGED
-                            failures_of_year = failures_df[
-                                (failures_df['Year'] == year) &
-                                (failures_df['EventName'].str.replace(' ', '') == event_name)
-                                ]
-                            # TO BE CHANGED
-                            print(f'Found {failures_of_year.shape[0]} failures for {event_name} of {year}')
-                            failure_found = False
+                                    # Save the cleaned and normalized data for the current driver
+                                    if save_to_file:
+                                        np.savez_compressed(
+                                            f'{self.output_folder_path}/test_data/selected_driver/{year}_{event_name}_{driver}_{scaler_type}_normalized_complete_wPits.npz',
+                                            data=cleaned_data
+                                        )
+                                    else:
+                                        return cleaned_data
 
-                            if failures_of_year.shape[1] > 0:
-                                driver_failed_list = list(failures_of_year['DriverNumber'].unique())
-                                for failure in failures_of_year.iterrows():
-                                    driver_fail, event_fail, year_fail, problem_class = (failure[1]['DriverNumber'], failure[1]['EventName'], failure[1]['Year'], failure[1]['ProblemClass'])
-                                    event_fail = event_fail.replace(' ', '')
-                                    problem_class = problem_class.replace(' ', '')
+                    elif normalize_by_driver:
+                        for driver in df['Driver'].unique():
 
-                                    if event_name.lower() == event_fail.lower() and year == year_fail:
-                                        failure_found = True
-                                        df['DriverNumber'] = df['DriverNumber'].astype(int)
-                                        print(f'df: {df.shape}')
+                            # Filter the DataFrame for the current driver
+                            driver_df = df[df['Driver'] == driver].copy()
 
-                                        df_failures = df[df['DriverNumber'] == driver_fail].copy()
-                                        print(f'df_failures: {df_failures.shape}')
-                                        if df_failures.shape[0] > 0:
-                                            try:
-                                                cleaned_data_failures = self.normalize_data(df_failures, scaler_type)
-                                            except Exception as e:
-                                                # Save the error to a text file
-                                                error_message = f"{event_name}, {year}, failure({driver_fail}, {problem_class}): {str(e)}"
-                                                with open("D:/error_log.txt", "a") as error_file:
-                                                    error_file.write(error_message + "\n")
-                                                print("An error occurred. Details have been saved to 'error_log.txt'.")
-                                                continue
+                            # Normalize the data for the current driver
+                            cleaned_data = self.normalize_data(driver_df, scaler_type, include_not_accurate_and_pit=True)
 
-                                            print(f'Saving failure data for {driver_fail} in {event_fail} of {year_fail}...')
-                                            stime = time.time()
-                                            np.savez_compressed(
-                                                f'{output_folder}/train_data/train_data_only_failures/{year}_{event_name}_{scaler_type}_normalized_{driver_fail}_{problem_class}.npz',
-                                                data=cleaned_data_failures)
+                            print(f'Saving cleaned data for {driver}...')
 
-                                            etime = time.time()
-                                            print(f'Done in {etime - stime:.2f} seconds')
+                            # Save the cleaned and normalized data for the current driver
+                            np.savez_compressed(
+                                f'{self.output_folder_path}/test_data/normalized_data_by_driver/{year}_{event_name}_{driver}_{scaler_type}_normalized_complete_wPits.npz',
+                                data=cleaned_data
+                            )
 
-                                print(f'Saving {event_name} of {year}...')
-                                stime = time.time()
-                                print(f'df_without_failures before: {df.shape}')
-                                df_without_failures = df[~df['DriverNumber'].isin(driver_failed_list)].copy()
-                                print(f'df_without_failures after: {df_without_failures.shape}')
-                                try:
-                                    cleaned_data_without_failures = self.normalize_data(df_without_failures, scaler_type)
-                                except Exception as e:
-                                    # Save the error to a text file
-                                    error_message = f"{event_name}, {year}, train file without failures (removed): {str(e)}"
-                                    with open("D:/error_log.txt", "a") as error_file:
-                                        error_file.write(error_message + "\n")
-                                    print("An error occurred. Details have been saved to 'error_log.txt'.")
-                                    continue
-                                np.savez_compressed(
-                                    f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
-                                    data=cleaned_data_without_failures)
-                                etime = time.time()
-                                print(f'Done in {etime - stime:.2f} seconds')
+                    else:
+                        # Normalize the data for the entire event and year
+                        failures_df = pd.read_csv('../Dataset/19-24_all_events_anomalies.csv')
+                        failures_of_year = failures_df[
+                            (failures_df['Year'] == year) &
+                            (failures_df['EventName'].str.replace(' ', '') == event_name)]
 
-                            if not failure_found:
-                                try:
-                                    cleaned_data = self.normalize_data(df, scaler_type)
-                                except Exception as e:
-                                    # Save the error to a text file
-                                    error_message = f"{event_name}, {year}, train file without failures (absent): {str(e)}"
-                                    with open("D:/error_log.txt", "a") as error_file:
-                                        error_file.write(error_message + "\n")
-                                    print("An error occurred. Details have been saved to 'error_log.txt'.")
-                                    continue
-                                print(f'Saving {event_name} data of {year}...')
-                                stime = time.time()
-                                np.savez_compressed(
-                                    f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
-                                    data=cleaned_data)
-                                etime = time.time()
-                                print(f'Done in {etime - stime:.2f} seconds')
-                # except Exception as e:
-                #     print(f'Error processing {file}: {e}')
+                        print(f'Found {failures_of_year.shape[0]} failures for {event_name} of {year}')
+                        failure_found = False
+
+                        if failures_of_year.shape[1] > 0:
+                            driver_failed_list = list(failures_of_year['DriverNumber'].unique())
+                            for failure in failures_of_year.iterrows():
+                                driver_fail, event_fail, year_fail, problem_class = (failure[1]['DriverNumber'], failure[1]['EventName'], failure[1]['Year'], failure[1]['ProblemClass'])
+                                event_fail = event_fail.replace(' ', '')
+                                problem_class = problem_class.replace(' ', '')
+
+                                if event_name.lower() == event_fail.lower() and year == year_fail:
+                                    failure_found = True
+                                    df['DriverNumber'] = df['DriverNumber'].astype(int)
+                                    print(f'df: {df.shape}')
+
+                                    df_failures = df[df['DriverNumber'] == driver_fail].copy()
+                                    print(f'df_failures: {df_failures.shape}')
+                                    if df_failures.shape[0] > 0:
+                                        try:
+                                            df_failures['Failure'] = problem_class
+                                            cleaned_data_failures = self.normalize_data(df_failures, scaler_type, include_not_accurate_and_pit=True)
+                                        except Exception as e:
+                                            # Save the error to a text file
+                                            error_message = f"{event_name}, {year}, failure({driver_fail}, {problem_class}): {str(e)}"
+                                            with open("D:/error_log.txt", "a") as error_file:
+                                                error_file.write(error_message + "\n")
+                                            print("An error occurred. Details have been saved to 'error_log.txt'.")
+                                            continue
+
+                                        print(f'Saving failure data for {driver_fail} in {event_fail} of {year_fail}...')
+                                        stime = time.time()
+                                        np.savez_compressed(
+                                            f'{output_folder}/train_data/train_data_only_failures/{year}_{event_name}_{scaler_type}_normalized_{driver_fail}_{problem_class}.npz',
+                                            data=cleaned_data_failures)
+
+                                        etime = time.time()
+                                        print(f'Done in {etime - stime:.2f} seconds')
+
+                            print(f'Saving {event_name} of {year}...')
+                            stime = time.time()
+                            print(f'df_without_failures before: {df.shape}')
+                            df_without_failures = df[~df['DriverNumber'].isin(driver_failed_list)].copy()
+                            print(f'df_without_failures after: {df_without_failures.shape}')
+                            try:
+                                cleaned_data_without_failures = self.normalize_data(df_without_failures, scaler_type, include_not_accurate_and_pit=include_not_accurate_and_pit)
+                            except Exception as e:
+                                # Save the error to a text file
+                                error_message = f"{event_name}, {year}, train file without failures (removed): {str(e)}"
+                                with open("D:/error_log.txt", "a") as error_file:
+                                    error_file.write(error_message + "\n")
+                                print("An error occurred. Details have been saved to 'error_log.txt'.")
+                                continue
+                            np.savez_compressed(
+                                f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                data=cleaned_data_without_failures)
+                            etime = time.time()
+                            print(f'Done in {etime - stime:.2f} seconds')
+
+                        if not failure_found:
+                            try:
+                                cleaned_data = self.normalize_data(df, scaler_type, include_not_accurate_and_pit=include_not_accurate_and_pit)
+                            except Exception as e:
+                                # Save the error to a text file
+                                error_message = f"{event_name}, {year}, train file without failures (absent): {str(e)}"
+                                with open("D:/error_log.txt", "a") as error_file:
+                                    error_file.write(error_message + "\n")
+                                print("An error occurred. Details have been saved to 'error_log.txt'.")
+                                continue
+                            print(f'Saving {event_name} data of {year}...')
+                            stime = time.time()
+                            np.savez_compressed(
+                                f'{output_folder}/train_data/train_data_without_failures/{year}_{event_name}_{scaler_type}_normalized.npz',
+                                data=cleaned_data)
+                            etime = time.time()
+                            print(f'Done in {etime - stime:.2f} seconds')
 
 if __name__ == '__main__':
 
@@ -539,7 +496,7 @@ if __name__ == '__main__':
                        '1. [TRAIN] Normalize ALL data by event and year REMOVING pit-stops, and driver with failures (saved separately for classification training)\n '
                        '2. [TRAIN] Normalize ALL data by event and year MAINTAINING pit-stops and REMOVING driver with failures (saved separately for classification training)\n '
                        '3. [TEST] Normalize data by driver, event and year MAINTAINING pit-stops\n '
-                       '4. [TEST] Normalize a single file (driver, event, year)\n '
+                       '4. [TEST] Normalize a single file MAINTAINING pit-stops (driver, event, year)\n '
                        '--> ')
 
     if user_input == '1':
@@ -551,8 +508,13 @@ if __name__ == '__main__':
         if not os.path.exists(f'{output_folder}/train_data/train_data_only_failures'):
             os.makedirs(f'{output_folder}/train_data/train_data_only_failures')
 
-        normalizer = Normalizer(input_folder, output_folder, pit_stops=False)
-        normalizer.preprocessing_and_normalization()
+        normalizer = Normalizer(input_folder, output_folder)
+        normalizer.preprocessing_and_normalization(
+            scaler_type="MinMaxScaler",
+            normalize_by_driver=False,
+            include_not_accurate_and_pit=False,
+            save_to_file=True
+        )
 
     elif user_input == '2':
 
@@ -560,11 +522,16 @@ if __name__ == '__main__':
             os.makedirs(f'{output_folder}/train_data')
         if not os.path.exists(f'{output_folder}/train_data/train_data_without_failures'):
             os.makedirs(f'{output_folder}/train_data/train_data_without_failures')
-        if not os.path.exists(f'{output_folder}/train_data/train_data_with_failures'):
-            os.makedirs(f'{output_folder}/train_data/train_data_with_failures')
+        if not os.path.exists(f'{output_folder}/train_data/train_data_only_failures'):
+            os.makedirs(f'{output_folder}/train_data/train_data_only_failures')
 
-        normalizer = Normalizer(input_folder, output_folder, pit_stops=True)
-        normalizer.preprocessing_and_normalization()
+        normalizer = Normalizer(input_folder, output_folder)
+        normalizer.preprocessing_and_normalization(
+            scaler_type="MinMaxScaler",
+            normalize_by_driver=False,
+            include_not_accurate_and_pit=True,
+            save_to_file=True
+        )
 
     elif user_input == '3':
 
@@ -573,7 +540,7 @@ if __name__ == '__main__':
         if not os.path.exists(f'{output_folder}/test_data/normalized_data_by_driver'):
             os.makedirs(f'{output_folder}/test_data/normalized_data_by_driver')
 
-        normalizer = Normalizer(input_folder, output_folder, pit_stops=True)
+        normalizer = Normalizer(input_folder, output_folder)
         normalizer.preprocessing_and_normalization(normalize_by_driver=True)
 
     elif user_input == '4':
@@ -589,7 +556,7 @@ if __name__ == '__main__':
         if not os.path.exists(f'{output_folder}/test_data/selected_driver'):
             os.makedirs(f'{output_folder}/test_data/selected_driver')
 
-        normalizer = Normalizer(input_folder, output_folder, given_driver=driver, given_event=event, given_year=year, pit_stops=True)
+        normalizer = Normalizer(input_folder, output_folder, given_driver=driver, given_event=event, given_year=year)
         normalizer.preprocessing_and_normalization()
     else:
         print('Invalid input. Exiting...')

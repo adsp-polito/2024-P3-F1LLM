@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split, KFold
 from tqdm import tqdm
 import os  # For file management
 
+from test import input_folder_path
+
 
 # Custom Dataset with Dynamic Sliding Window
 class FailureDataset(Dataset):
@@ -73,9 +75,19 @@ def evaluate_model(model, test_loader, device):
 
 # Main function with K-Fold Cross Validation
 def main():
+
     # Load the dataset
-    new_data_path = "Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_train.npz"
-    data = np.load(new_data_path, allow_pickle=True)['data']
+    input_folder_path = "D:\F1LLM_Datasets/npz_normalized/train_data/train_data_only_failures"
+
+    all_data = []
+    for file in os.listdir(input_folder_path):
+        if file.endswith(".npz") and not file.startswith("2024"):
+            file_path = os.path.join(input_folder_path, file)
+            data = np.load(file_path, allow_pickle=True)['data']
+
+            all_data.append(data)
+
+    data = np.concatenate(all_data, axis=0)
 
     # Separate features and labels
     X = data[:, :-1]  # All columns except the last one (features)
