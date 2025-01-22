@@ -6,23 +6,31 @@ from sklearn.model_selection import train_test_split, KFold
 from tqdm import tqdm
 import os  # For file management
 
-from test import input_folder_path
-
 
 # Custom Dataset with Dynamic Sliding Window
 class FailureDataset(Dataset):
-    def __init__(self, data, labels, sequence_length):
-        self.data = torch.tensor(data, dtype=torch.float32)
-        self.labels = torch.tensor(labels, dtype=torch.long)
+    def __init__(self, race_data, sequence_length):
+        self.data = []
+        self.labels = []
         self.sequence_length = sequence_length
 
+        # Process each race independently
+        for race in race_data:
+            race_features = torch.tensor(race[:, :-1], dtype=torch.float32)
+            race_labels = torch.tensor(race[:, -1], dtype=torch.long)
+
+            # Create sliding windows within the race
+            for i in range(len(race_features) - sequence_length + 1):
+                # end = min(self.sequence_length, len(race_features) - i)
+                self.data.append(race_features[i:i + sequence_length])
+                self.labels.append(race_labels[i + sequence_length - 1])
+
     def __len__(self):
-        return len(self.data) - self.sequence_length + 1
+        return len(self.data)
 
     def __getitem__(self, idx):
-        sample = self.data[idx:idx + self.sequence_length]
-        label = self.labels[idx + self.sequence_length - 1]
-        return sample, label
+        return self.data[idx], self.labels[idx]
+
 
 
 # Model Definition
@@ -74,59 +82,73 @@ def evaluate_model(model, test_loader, device):
 
 
 # Main function with K-Fold Cross Validation
+
 def main():
-
     # Load the dataset
-    input_folder_path = "D:\F1LLM_Datasets/npz_normalized/train_data/train_data_only_failures"
-
-    all_data = []
-    for file in os.listdir(input_folder_path):
-        if file.endswith(".npz") and not file.startswith("2024"):
-            file_path = os.path.join(input_folder_path, file)
-            data = np.load(file_path, allow_pickle=True)['data']
-
-            all_data.append(data)
-
-    data = np.concatenate(all_data, axis=0)
+    new_data_path = "../Dataset/OnlyFailuresByDriver/npz_failures_MinMaxScaler_normalized_train.npz"
+    data = np.load(new_data_path, allow_pickle=True)['data']
 
     # Separate features and labels
     X = data[:, :-1]  # All columns except the last one (features)
     y = data[:, -1].astype(int)  # The last column as integer labels (target)
 
     # Hyperparameters
-    batch_size = 32
+    batch_size = 64
     learning_rate = 0.0001
-    epochs = 20
-    sequence_length = 20
+    epochs = 5
+    sequence_length = 100
     n_features = X.shape[1]  # Number of features per sample
     n_classes = len(np.unique(y))  # Automatically determine the number of classes
-    k_folds = 5  # Number of splits for K-Fold Cross-Validation
 
-    # K-Fold Cross Validation
-    kfold = KFold(n_splits=k_folds, shuffle=True, random_state=42)
+    # Split the data into team-race combinations
+    team_race_ids = np.array([f"{team}-{race}" for team, race in zip(data[:, -8], data[:, -2])])
+
+    # Get unique team-race combinations
+
+    unique_team_race_ids = np.unique(team_race_ids)
+    print(len(team_race_ids), len(unique_team_race_ids))
+    print(unique_team_race_ids)
+
+    # Set up K-Fold Cross Validation
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+    # Initialize the model, loss, and optimizer
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = CNNLSTMModel(n_features=n_features, n_classes=n_classes).to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
     # Directory to save models
     model_save_dir = "classification_models"
     os.makedirs(model_save_dir, exist_ok=True)
 
-    for fold, (train_idx, val_idx) in enumerate(kfold.split(X)):
-        print(f"Fold {fold + 1}/{k_folds}")
+    # K-Fold Cross Validation Loop
+    for fold, (train_indices, val_indices) in enumerate(kf.split(unique_team_race_ids)):
+        print(f"Fold {fold + 1}/{kf.get_n_splits()}")
 
-        # Split the data into training and validation sets for this fold
-        X_train, X_val = X[train_idx], X[val_idx]
-        y_train, y_val = y[train_idx], y[val_idx]
+        # Split the team-race IDs for this fold
+        train_team_race_ids = unique_team_race_ids[train_indices]
+        val_team_race_ids = unique_team_race_ids[val_indices]
 
-        # Create DataLoaders for the current fold
-        train_dataset = FailureDataset(X_train, y_train, sequence_length)
-        val_dataset = FailureDataset(X_val, y_val, sequence_length)
+        # Create masks to filter the data for training and validation
+        train_mask = np.isin(team_race_ids, train_team_race_ids)
+        val_mask = np.isin(team_race_ids, val_team_race_ids)
+
+        # Split the data into training and validation sets
+        train_data = data[train_mask]
+        val_data = data[val_mask]
+
+        # Process each race independently for the FailureDataset
+        train_races = [train_data[train_data[:, -2] == race_id] for race_id in np.unique(train_data[:, -2])]
+        val_races = [val_data[val_data[:, -2] == race_id] for race_id in np.unique(val_data[:, -2])]
+
+        # Create datasets
+        train_dataset = FailureDataset(train_races, sequence_length)
+        val_dataset = FailureDataset(val_races, sequence_length)
+
+        # DataLoaders
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-
-        # Initialize the model, loss, and optimizer
-        model = CNNLSTMModel(n_features=n_features, n_classes=n_classes).to(device)
-        criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)  # You can change optimizer here
 
         # Training Loop
         for epoch in range(epochs):
@@ -151,18 +173,16 @@ def main():
             print(f"Epoch [{epoch + 1}/{epochs}], Loss: {epoch_loss:.4f}")
 
             # Save the model after each epoch
-            model_save_path = os.path.join(model_save_dir,
-                                           f"classification_model_fold{fold + 1}_epoch{epoch + 1}_loss{epoch_loss:.4f}.pth")
+            model_save_path = os.path.join(model_save_dir, f"classification_model_sequence500_fold{fold + 1}_epoch{epoch + 1}_loss{epoch_loss:.4f}.pth")
             torch.save(model.state_dict(), model_save_path)
 
-            # Evaluate after each epoch
-            if (epoch + 1) % 5 == 0:  # Evaluate every 5 epochs
-                accuracy = evaluate_model(model, val_loader, device)
-                print(f"Validation Accuracy after Epoch {epoch + 1}: {accuracy:.2f}%")
+        # Evaluate after each fold
+        accuracy = evaluate_model(model, val_loader, device)
+        print(f"Validation Accuracy after Fold {fold + 1}: {accuracy:.2f}%")
 
-        # Evaluate the model on the final epoch of this fold
-        final_accuracy = evaluate_model(model, val_loader, device)
-        print(f"Final Validation Accuracy for Fold {fold + 1}: {final_accuracy:.2f}%")
+    # Final evaluation after all folds
+    print("K-Fold Cross Validation Complete")
+
 
 
 if __name__ == "__main__":
