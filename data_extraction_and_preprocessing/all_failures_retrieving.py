@@ -60,9 +60,9 @@ categories = {
     "Engine": ["Engine"],
     "Power Unit": ["Power Unit", "Power loss", "Turbo"],
     "Cooling System": ["Overheating", "Water pressure", "Water leak", "Cooling system", "Radiator", "Water pump"],
-    "Suspension and Drive": ["Suspension", "Steering", "Driveshaft", "Differential", "Vibrations", "Hydraulics"],
+    "Suspension and Drive": ["Suspension", "Steering", "Vibrations", "Hydraulics"],
     "Braking System": ["Brakes"],
-    "Transmission and Gearbox": ["Gearbox", "Transmission"],
+    "Transmission and Gearbox": ["Gearbox", "Transmission", "Driveshaft", "Differential"],
     "Others": ["Mechanical", "Exhaust", "Oil leak", "Technical", "Out of fuel", "Fuel pump", "Fuel pressure", "Fuel leak", "Electronics", "Electrical", "Battery"],
 }
 

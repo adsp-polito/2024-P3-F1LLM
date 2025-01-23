@@ -1,0 +1,10 @@
+DriverNumber,EventName,Year,Status,ProblemClass
+55,Bahrain Grand Prix, 2019,Gearbox,Transmission and Gearbox
+3,Japanese Grand Prix,2019,Brakes,Braking System
+27,Japanese Grand Prix,2019,Brakes,Braking System
+20,Emilia Romagna Grand Prix,2020,Gearbox,Transmission and Gearbox
+10,Bahrain Grand Prix,2021,Suspension,Suspension and Drive
+6,Bahrain Grand Prix,2021,Fuel System,Others
+77,Monaco Grand Prix,2021,Wheel nut,Aerodynamics and Tyres
+24,French Grand Prix,2022,Power Unit,Power Unit
+20,Singapore Grand Prix,2024,Puncture,Aerodynamics and Tyres
