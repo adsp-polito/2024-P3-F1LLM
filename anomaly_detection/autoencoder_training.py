@@ -32,13 +32,10 @@ def load_data(folder_path):
     for file in os.listdir(folder_path):
         if file.endswith('.npz') and not file.startswith('2024'):
             print(f'Loading {file}...')
-            stime = time.time()
             file_path = os.path.join(folder_path, file)
             np_data = np.load(file_path, allow_pickle=True)['data']
             print(f'Loaded! Appending to list...')
             all_data.append(np_data)
-            etime = time.time()
-            print(f'Done in {etime - stime:.2f} seconds')
 
     print(f'Concatenating data...')
     np_data = np.concatenate(all_data, axis=0)
@@ -109,6 +106,9 @@ class LSTMAutoencoder(nn.Module):
         return x
 
 
+def compute_reconstruction_error(inputs, outputs):
+    return torch.mean((inputs - outputs) ** 2, dim=(1, 2)).detach().cpu().numpy()
+
 def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_freq, device, learning_rate, criterion,
                       optimizer_name='Adam'):
     scaler = GradScaler('cuda')
@@ -145,7 +145,7 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
         if epoch % validation_freq == 0 or epoch == epochs or epoch == 1:
             autoencoder.eval()
             val_loss = 0
-            val_reconstruction_error = []
+            val_reconstruction_errors = []
 
             with torch.no_grad():
                 for batch in val_loader:
@@ -155,17 +155,18 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
                     loss = criterion(outputs, batch)
                     val_loss += loss.item()
 
-                    error = torch.mean(torch.abs(outputs - batch)).item()
-                    val_reconstruction_error.append(error)
+                    # Compute reconstruction error for the batch
+                    errors = compute_reconstruction_error(batch, outputs)
+                    val_reconstruction_errors.extend(errors)  # Append errors to the list
 
             val_loss /= len(val_loader)
             history["val_loss"].append(val_loss)
 
             # Calculate the percentile thresholds from reconstruction errors
-            thresholds = np.percentile(val_reconstruction_error, [95, 99, 99.5, 99.9])
+            thresholds = np.percentile(val_reconstruction_errors, [95, 99, 99.5, 99.9])
 
             history["thresholds99_9"].append(thresholds[-1])
-            history["reconstruction_error"].append(val_reconstruction_error)
+            history["reconstruction_error"].append(val_reconstruction_errors)
 
             print(
                 f"Epoch {epoch}/{epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}\n"
@@ -185,14 +186,8 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
         print("Saving the trained model...")
         learning_rate_str = str(learning_rate).split(".")[1]
         torch.save(autoencoder.state_dict(),
-                   f"saved_models/v4_noLapTime/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
+                   f"saved_models/v5_newReconMethod/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
         print("Model saved.")
-
-
-
-    print(
-
-    )
     return history
 
 
