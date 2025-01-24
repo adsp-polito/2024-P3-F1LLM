@@ -3,6 +3,7 @@ from dataclasses import replace
 
 import numpy as np
 import pandas as pd
+from numba import float32
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import os
@@ -108,6 +109,7 @@ def map_features(df):
             'SuspensionandDrive': 5,
             'AerodynamicsandTyres': 6,
             'TransmissionandGearbox': 7,
+            'No Failure': 99
         },
     }
     df = df.dropna(subset=['Compound'])
@@ -121,7 +123,7 @@ def map_features(df):
     df = df.dropna(subset=['DRS'])
     return df
 
-def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failures = []):
+def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failures = [], failures = [], year=0, event_name=""):
     print('Preprocessing data...')
     start_time = time.time()
     
@@ -185,22 +187,27 @@ def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failu
         
         if 'IsAccurate' in df.columns:
             df = df[df['IsAccurate'] == True]
-    else:
-        #remove when driver is in the list of failures
-        if len(driver_failures) != 0:
-            df = df[~df['DriverNumber'].isin(driver_failures)]
         
 
     # One-hot encode 'Compound'
     if 'Compound' in df.columns:
         df = df[df['Compound'] != 'UNKNOWN'] # remove UNKNOWN compound records
 
+    df["DriverNumber"] = df["DriverNumber"].astype(int)
+    df["Failure"] = "No Failure"
+    index = 0
+    if driver_failures:
+        for driver in driver_failures:
+            df.loc[df["DriverNumber"] == int(driver), "Failure"] = failures[index]
+            print(f"Driver {driver} has a failure of class {failures[index]}")
+            index += 1
+
     # Map Team and Event
     df = map_features(df)
 
     # Columns to drop (irrelevant or redundant)
     drop_cols = [
-        'Time_x', 'Driver', 'DriverNumber', 'Stint', 'PitOutTime_in_ms', 'PitInTime_in_ms',
+        'Time_x', 'Driver', 'Stint', 'PitOutTime_in_ms', 'PitInTime_in_ms',
         'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime',
         'Sector3SessionTime', 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest',
         'FreshTyre', 'LapStartTime', 'LapStartDate', 'Deleted', 'DeletedReason', 'FastF1Generated',
@@ -242,6 +249,7 @@ def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failu
     # Ensure all boolean columns are converted to int (otherwise it cause a problem)
     df = df.apply(lambda boolean_col: boolean_col.map({True: 1, False: 0}) if boolean_col.dtypes == 'bool' else boolean_col)
 
+    print(f"Columns: {df.columns}")
     # Apply transformations
     processed_data = preprocessor.fit_transform(df)
 
@@ -250,7 +258,21 @@ def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failu
     end_time = time.time()
     elapsed_time = (end_time - start_time) / 60  # Convert to minutes
     print(f"Preprocessing took {elapsed_time:.2f} minutes.")
-    return processed_data
+
+    # print(processed_data[:, -8],processed_data[:, -9],processed_data[:, -7])
+    index = 0
+    for driver in driver_failures:
+        normalized_data_driver = processed_data[processed_data[:, -9] == float32(driver)]
+        print(f'Normalized data shape for {float32(driver)}: {normalized_data_driver.shape}')
+        print(processed_data[:, -9])
+        print(f'Saving cleaned data for {driver}...')
+        np.savez_compressed(
+            f'{output_folder}/normalized_data_by_driver/{year}_{event_name}_{driver}_{scaler_type}_normalized_complete_{failures[index]}.npz',
+            data=normalized_data_driver
+        )
+        index += 1
+
+    # return processed_data
 
 def preprocessing_and_normalization(input_folder_path, output_folder_path = "normalized", scaler_type="MinMaxScaler", save_to_file=True):
 
@@ -264,6 +286,38 @@ def preprocessing_and_normalization(input_folder_path, output_folder_path = "nor
         'WindDirection', 'WindSpeed', 'Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead',
         'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance',
         'RelativeDistance', 'Status', 'X', 'Y', 'Z', 'Year', 'Event'
+    ]
+
+    normalized_cols = [
+        'SessionTime',
+        'Time_in_ms',
+        'LapNumber',
+        'Position',
+        'Speed',
+        'AirTemp',
+        'Humidity',
+        'Pressure',
+        'TrackTemp',
+        'WindDirection',
+        'WindSpeed',
+        'DistanceToDriverAhead',
+        'RPM',
+        'nGear',
+        'Throttle',
+        'X',
+        'Y',
+        'Z',
+        'Distance',
+        'TyreLife',
+        'DriverNumber',
+        'Compound',
+        'Team',
+        'TrackStatus',
+        'Rainfall',
+        # 'DriverAhead',
+        'Brake',
+        'DRS',
+        'Event'
     ]
 
     for file in os.listdir(input_folder_path):
@@ -283,31 +337,19 @@ def preprocessing_and_normalization(input_folder_path, output_folder_path = "nor
         mask = (failures_df['EventName'].str.replace(' ', '') == event_name) & (failures_df['Year'] == year)
         filter_year_event = failures_df[mask]
         driver_failures = list(filter_year_event["DriverNumber"].reset_index(drop=True))
+        failures = list(filter_year_event["ActProblemClass"].reset_index(drop=True))
         
-        normalized_data = normalize_data(df, scaler_type, driver_failures)
-        np.savez_compressed(
-                f'{output_folder}/normalized_data/{year}_{event_name}_{scaler_type}_normalized_complete.npz',
-                data=normalized_data
-            )
-        
+        normalize_data(df, scaler_type, False, driver_failures,failures, year, event_name)
+        # np.savez_compressed(
+        #         f'{output_folder}/normalized_data/{year}_{event_name}_{scaler_type}_normalized_complete.npz',
+        #         data=normalized_data
+        #     )
+        # normalized_data_df = pd.DataFrame(normalized_data, columns=normalized_cols)
         # Normalize foreach driver
-        print(driver_failures)
-        for driver in driver_failures:
-            df['DriverNumber'] = df['DriverNumber'].astype(int)
-            driver_df = df[df['DriverNumber'] == int(driver)].copy()
-            if not driver_df.empty:
-                normalized_data_driver = normalize_data(driver_df, scaler_type, filtered=False)
-            else:
-                print(f'Driver {driver} did not start the race.')
-            print(f'Saving cleaned data for {driver}...')
-            np.savez_compressed(
-                f'{output_folder}/normalized_data_by_driver/{year}_{event_name}_{driver}_{scaler_type}_normalized_complete_wPits.npz',
-                data=normalized_data_driver
-            )
 
 
 if "__main__" == __name__:
-    output_folder = 'D:/F1LLM_Datasets/npz_normalized_new'
+    output_folder = 'C:/Autoencoder/normalized'
     if not os.path.exists(f'{output_folder}'):
         os.makedirs(f'{output_folder}')
         
@@ -317,7 +359,7 @@ if "__main__" == __name__:
     if not os.path.exists(f'{output_folder}/normalized_data'):
         os.makedirs(f'{output_folder}/normalized_data')
 
-    input_folder = 'D:/F1LLM_Datasets/npz_all_telemetry_data'
-    for year in [2022]:
+    input_folder = 'C:/Autoencoder/allData'
+    for year in [2023]:
         year_folder = os.path.join(input_folder, str(year))
         preprocessing_and_normalization(input_folder_path=year_folder)
