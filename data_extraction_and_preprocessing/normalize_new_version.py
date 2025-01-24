@@ -215,6 +215,7 @@ def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failu
 
     if 'Position' in df.columns:
         df.loc[df['Position'] == 1, 'DistanceToDriverAhead'] = 0
+        df = df.dropna(subset=['Position'])
         
     df['TrackStatus'] = df['TrackStatus'].replace('', np.nan)
     df = df.dropna(subset=['TrackStatus'])
@@ -251,7 +252,7 @@ def normalize_data(df, scaler_type="MinMaxScaler", filtered = True, driver_failu
     print(f"Preprocessing took {elapsed_time:.2f} minutes.")
     return processed_data
 
-def preprocessing_and_normalization(input_folder_path = "allData", output_folder_path = "normalized", scaler_type="MinMaxScaler", save_to_file=True):
+def preprocessing_and_normalization(input_folder_path, output_folder_path = "normalized", scaler_type="MinMaxScaler", save_to_file=True):
 
     all_columns = [
         'Time_x', 'Driver', 'DriverNumber', 'LapTime', 'LapNumber', 'Stint', 'PitOutTime', 'PitInTime',
@@ -278,7 +279,7 @@ def preprocessing_and_normalization(input_folder_path = "allData", output_folder
         df = pd.DataFrame(np_data, columns=all_columns)
         print(f'Done!')
         
-        failures_df = pd.read_csv('19-24_all_events_anomalies_new.csv')
+        failures_df = pd.read_csv('../Dataset/19-24_all_events_anomalies_new.csv')
         mask = (failures_df['EventName'].str.replace(' ', '') == event_name) & (failures_df['Year'] == year)
         filter_year_event = failures_df[mask]
         driver_failures = list(filter_year_event["DriverNumber"].reset_index(drop=True))
@@ -306,7 +307,7 @@ def preprocessing_and_normalization(input_folder_path = "allData", output_folder
 
 
 if "__main__" == __name__:
-    output_folder = 'normalized'
+    output_folder = 'D:/F1LLM_Datasets/npz_normalized_new'
     if not os.path.exists(f'{output_folder}'):
         os.makedirs(f'{output_folder}')
         
@@ -315,5 +316,8 @@ if "__main__" == __name__:
         
     if not os.path.exists(f'{output_folder}/normalized_data'):
         os.makedirs(f'{output_folder}/normalized_data')
-        
-    preprocessing_and_normalization()
+
+    input_folder = 'D:/F1LLM_Datasets/npz_all_telemetry_data'
+    for year in [2022]:
+        year_folder = os.path.join(input_folder, str(year))
+        preprocessing_and_normalization(input_folder_path=year_folder)

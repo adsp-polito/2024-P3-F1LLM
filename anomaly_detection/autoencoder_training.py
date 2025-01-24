@@ -34,11 +34,11 @@ def load_data(folder_path):
             print(f'Loading {file}...')
             file_path = os.path.join(folder_path, file)
             np_data = np.load(file_path, allow_pickle=True)['data']
-            print(f'Loaded! Appending to list...')
             all_data.append(np_data)
 
     print(f'Concatenating data...')
     np_data = np.concatenate(all_data, axis=0)
+    np_data = np.delete(np_data, -4, axis=1)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -62,19 +62,7 @@ def plot_history(history):
     plt.title('Training and Validation Loss')
     plt.legend()
     plt.grid(True)
-    plt.savefig('AD_19-23_autoencoder_loss_noLapTime.png')
-    plt.show()
-
-
-    plt.figure(figsize=(12, 6))
-
-    plt.plot(history['thresholds99_9'], label='Thresholds')
-    plt.xlabel('Epochs')
-    plt.ylabel('Threshold')
-    plt.title('Thresholds')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('AD_19-23_autoencoder_thresholds_noLapTime.png')
+    plt.savefig('250123_AD_19-23_autoencoder_loss.png')
     plt.show()
 
 
@@ -186,7 +174,7 @@ def train_autoencoder(autoencoder, train_loader, val_loader, epochs, validation_
         print("Saving the trained model...")
         learning_rate_str = str(learning_rate).split(".")[1]
         torch.save(autoencoder.state_dict(),
-                   f"saved_models/v5_newReconMethod/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
+                   f"saved_models/v250123_noDriverAhead/AD_19-23_autoencoder_{optimizer_name}_lr{learning_rate_str}_ep{epoch}_loss{train_loss:.4f}.pth")
         print("Model saved.")
     return history
 
@@ -210,7 +198,7 @@ if __name__ == "__main__":
     criterion = nn.L1Loss()
 
     # Path to the dataset
-    dataset_path = "D:/F1LLM_Datasets/npz_normalized/train_data/train_data_without_failures"
+    dataset_path = "D:/F1LLM_Datasets/zz.npz_normalized/train_data/train_data_without_failures"
 
     # Load data
     data = load_data(dataset_path)
