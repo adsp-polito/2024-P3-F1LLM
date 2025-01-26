@@ -10,8 +10,8 @@
 ![Status](https://img.shields.io/badge/status-Completed-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
-<img src="assets/logo.png" alt="Project Logo" align="right" width="150" style="margin-left:10px;" />
-<img src="assets/dbmg.png" alt="DBMG Logo" align="right" width="150" style="margin-left:10px;" />
+<img src="assets/logo.png" alt="Project Logo" align="right" width="75" style="margin-left:10px;" />
+<img src="assets/dbmg.png" alt="DBMG Logo" align="right" width="75" style="margin-left:10px;" />
 
 The complete report detailing our methodology and results is available **[here](https://github.com/adsp-polito/2024-P3-F1LLM/blob/main/Team6_P3_F1LLM_report.pdf)**.
 
