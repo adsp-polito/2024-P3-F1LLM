@@ -13,8 +13,6 @@
 <img src="assets/logo.png" alt="Project Logo" align="right" width="75" style="margin-left:10px;" />
 <img src="assets/dbmg.png" alt="DBMG Logo" align="right" width="75" style="margin-left:10px;" />
 
-The complete report detailing our methodology and results is available 
-
 The comprehensive project report, which provides an in-depth explanation of our methodology, experimental setup, and detailed results, is available for review **[here](https://github.com/adsp-polito/2024-P3-F1LLM/blob/main/Team6_P3_F1LLM_report.pdf)**.
 
 ## Overview
