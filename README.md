@@ -10,6 +10,9 @@
 ![Status](https://img.shields.io/badge/status-Completed-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
+![Project Logo](assets/logo.png)
+![DBMG Logo](assets/dbmg.png)
+![Formula1 Logo](assets/f1_logo.png)
 
 The complete report detailing our methodology and results is available **[here] (https://github.com/adsp-polito/2024-P3-F1LLM/blob/main/Team6_P3_F1LLM_report.pdf)**
 
