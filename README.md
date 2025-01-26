@@ -12,9 +12,8 @@
 
 <img src="assets/logo.png" alt="Project Logo" align="right" width="150" style="margin-left:10px;" />
 <img src="assets/dbmg.png" alt="DBMG Logo" align="right" width="150" style="margin-left:10px;" />
-<img src="assets/f1_logo.png" alt="Formula1 Logo" align="right" width="150" style="margin-left:10px;" />
 
-The complete report detailing our methodology and results is available **[here] (https://github.com/adsp-polito/2024-P3-F1LLM/blob/main/Team6_P3_F1LLM_report.pdf)**
+The complete report detailing our methodology and results is available **[here](https://github.com/adsp-polito/2024-P3-F1LLM/blob/main/Team6_P3_F1LLM_report.pdf)**.
 
 ## Overview
 In Formula 1, data plays a crucial role in understanding vehicle performance, optimizing strategies, and diagnosing issues. Teams rely on vast amounts of telemetry data collected during races to monitor critical parameters such as speed, engine performance, and tire conditions. However, analyzing this data to identify failures or anomalies is a time-consuming and complex task that requires a deep understanding of the car’s systems and racing environment.
