@@ -88,7 +88,7 @@ By thoroughly preprocessing the dataset, we ensured that the data fed into the m
 ## Repository Structure
 ```
 2024-P3-F1LLM/
-|— anomaly_detection/
+|— anomaly_detection_and_failure_classification/
     |— autoencoder_training.py
     |— classification_data.py
     |— classification_training.py
@@ -101,24 +101,19 @@ By thoroughly preprocessing the dataset, we ensured that the data fed into the m
 |— data_extraction_and_preprocessing/
     |— all_failures_retrieving.py
     |— all_race_data_extraction.py
-    |— normalize_new_version.py
-    |— normalize_npz.py
-    |— race_data_extraction.py
-|— Dataset/
-    |— FailuresTelemetryData/
-    |— OnlyFailuresByDriver/
-    |— 19-24_all_events_anomalies.csv
-    |— Failures_grouped_2018_2024.csv
-    |- Failures2014_2024_cleaned.csv
-    |- Failures2014_2024
-    |- new_pilots.csv
+    |— new_normalize_npz.py
+    |— old_normalize_npz.py
+|— Failures/
+    |— new_19-24_all_events_anomalies.csv
+    |— old_19-24_all_events_anomalies.csv
 |— LLM/
     |— LLM_launch.py
+|— models/
+    |— autoencoder_AdamW_lr0001_loss0.4037_fold5.pth
+    |— classification_model_fold5_epoch20_loss0.0231.pth
 |— notebooks/
-    |— csvAnomalies.ipynb
     |— modelAD_evaluation.ipynb
-    |- race_data_extraction.ipynb
-    |- testClassificationEvaluation.ipynb
+    |— testClassificationEvaluation.ipynb
 ```
 
 #### Description of the Repository Content
@@ -177,11 +172,11 @@ To use the system, follow these steps:
 If you wish to train the models from scratch, you can use the following scripts:
 - **Anomaly Detection**:
   ```bash
-  python anomaly_detection/autoencoder_training.py
+  python anomaly_detection_and_failure_classification/autoencoder_training.py
   ```
 - **Failure Classification**:
   ```bash
-  python anomaly_detection/classification_training.py
+  python anomaly_detection_and_failure_classification/classification_training.py
   ```
 
 Some pre-trained models are included in the repository, in their respective folders.

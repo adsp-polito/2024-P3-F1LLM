@@ -17,7 +17,7 @@ for y in year:
                 race_session.load(telemetry=False, laps=False, weather=False)  # IMPORTANT
                 print(f"Loaded data for {event_name} ({race_info['EventDate']})")
 
-                # Filtra per status rilevanti
+                # Filter relevant failures
                 relevant_status = race_session.results[(race_session.results['Status'] != 'Finished') &
                                                        (~race_session.results['Status'].str.contains('lap', case=False,
                                                                                                      na=False)) &
@@ -55,6 +55,7 @@ anomalies_df = pd.concat(all_data, ignore_index=True)
 anomalies_df['Year'] = anomalies_df['EventDate'].apply(lambda x: x.year)
 anomalies_df.drop(columns=['EventDate'], inplace=True)
 
+# Define the problem categories
 categories = {
     "Aerodynamics and Tyres": ["Undertray", "Rear wing", "Front wing", "Damage", "Puncture", "Wheel", "Tyre"],
     "Engine": ["Engine"],
@@ -75,4 +76,4 @@ anomalies_df['ProblemClass'] = anomalies_df['Status'].map(status_to_class)
 # Reorder the columns
 anomalies_df = anomalies_df[['DriverNumber', 'EventName', 'Year', 'Status', 'ProblemClass']]
 
-anomalies_df.to_csv("../Dataset/19-24_all_events_anomalies.csv", index=False)
+anomalies_df.to_csv("../Failures/old_19-24_all_events_anomalies.csv", index=False)

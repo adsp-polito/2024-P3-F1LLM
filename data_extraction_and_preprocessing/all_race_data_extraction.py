@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-# Function to merge laps with weather data
+# Merge laps with weather data
 def merge_laps_weather(laps, weather_data, include_weather):
     if not include_weather or weather_data is None:
         return laps
@@ -20,7 +20,7 @@ def merge_laps_weather(laps, weather_data, include_weather):
         direction="backward"
     )
 
-
+# Retrieve telemetry data
 def get_telemetry_data(target_laps, driver_number, year, event_name):
     telemetry_frames = []
 
@@ -40,7 +40,7 @@ def get_telemetry_data(target_laps, driver_number, year, event_name):
     # Combine telemetry frames if available
     return pd.concat(telemetry_frames) if telemetry_frames else None
 
-
+# Save the data
 def save_data(final_data, output_folder_path, year, event_name, npz_instead_csv):
 
     # Create the main folder if it doesn't exist
@@ -64,7 +64,7 @@ def save_data(final_data, output_folder_path, year, event_name, npz_instead_csv)
 
     print(f"Saved: {output_file}")
 
-
+# Main function
 def all_drivers_data_from_races(output_folder_path, include_weather=True, save_file=True, year=2024, npz_instead_csv=True):
 
     # Enable FastF1 cache

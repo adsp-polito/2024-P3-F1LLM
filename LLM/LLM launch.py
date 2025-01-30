@@ -1,8 +1,3 @@
-# Install necessary libraries -> Kaggle
-# %pip install gradio #type:ignore
-# %pip install -U "huggingface_hub[cli]" #type:ignore
-
-# Import libraries
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -65,7 +60,7 @@ class LSTMAutoencoder(nn.Module):
         x = self.output_layer(x)
         return x
 
-# Dataset for FastF1 data [ANOMALY DETECTION -> FAILURE CLASSIFICATION]
+# Failures for FastF1 data [ANOMALY DETECTION -> FAILURE CLASSIFICATION]
 class FastF1Dataset(Dataset):
     def __init__(self, data, sequence_length):
         self.data = data
@@ -77,7 +72,7 @@ class FastF1Dataset(Dataset):
     def __getitem__(self, idx):
         return torch.tensor(self.data[idx:idx + self.sequence_length], dtype=torch.float32)
 
-# Dataset wrapper for a single driver's data [FAILURE CLASSIFICATION]
+# Failures wrapper for a single driver's data [FAILURE CLASSIFICATION]
 class SingleDriverDataset(Dataset):
     def __init__(self, data):
         self.data = torch.tensor(data, dtype=torch.float32)
@@ -88,10 +83,9 @@ class SingleDriverDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
-# Anomaly detection function
+
 # This will generate a dataset with detected anomalies for further processing
-# SISTEMARE THRESHOLD
-def detect_anomalies(autoencoder_model_path, driver_data, sequence_length, threshold=None):
+def detect_anomalies(autoencoder_model_path, driver_data, sequence_length):
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -121,7 +115,7 @@ def detect_anomalies(autoencoder_model_path, driver_data, sequence_length, thres
     reconstruction_errors = np.array(reconstruction_errors)
 
     # Determine anomalies based on threshold
-    threshold = np.percentile(reconstruction_errors, 99.9)  # 99.9th percentile as threshold
+    threshold = 0.2061
     anomalies = reconstruction_errors > threshold
 
     indexes = np.where(anomalies == True)[0]
@@ -170,7 +164,7 @@ def predict_anomaly(model_path, driver_data, sequence_length, n_classes=8, anoma
     
     sliding_windows = np.array(sliding_windows)  # Convert to NumPy array
 
-    # Wrap sliding windows in a Dataset and DataLoader
+    # Wrap sliding windows in a Failures and DataLoader
     dataset = SingleDriverDataset(sliding_windows)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
@@ -217,7 +211,6 @@ def classify_anomalies(autoencoder_model_path, classification_model_path, driver
     # Sort aggregated probabilities by value in descending order
     sorted_probabilities = sorted(aggregated_probabilities.items(), key=lambda x: x[1], reverse=True)
 
-
     return sorted_probabilities
 
 class LLM_Agent:
@@ -237,7 +230,7 @@ class LLM_Agent:
 
     def analyze(self, data, task, threshold=None):
         try:
-            if task == "anomaly_detection":
+            if task == "anomaly_detection_and_failure_classification":
                 # Detect anomalies using the autoencoder model
                 sequence_length = 20
                 anomalies = detect_anomalies(self.autoencoder_model_path, data, sequence_length, threshold=threshold)
@@ -267,7 +260,7 @@ class LLM_Agent:
 
     def determine_task(self, prompt):
         if "anomaly detection" in prompt.lower():
-            return "anomaly_detection"
+            return "anomaly_detection_and_failure_classification"
         elif "failure classification" in prompt.lower():
             return "classify_anomalies"
         else:
@@ -300,7 +293,7 @@ class LLM_Agent:
             # Determine the task from the user's prompt
             task = self.determine_task(prompt)
 
-            if task == "anomaly_detection":
+            if task == "anomaly_detection_and_failure_classification":
                 if data is None:
                     # If data is missing, request it
                     instructions = (
@@ -310,7 +303,7 @@ class LLM_Agent:
                     return instructions
 
                 # Perform anomaly detection
-                task_result = self.analyze(data, "anomaly_detection", threshold=threshold)
+                task_result = self.analyze(data, "anomaly_detection_and_failure_classification", threshold=threshold)
                 instructions = (
                     "Based on the telemetry data, anomalies were detected. "
                     "Anomalies in Formula 1 refer to unexpected or abnormal events during a race session. "
@@ -378,8 +371,8 @@ def handle_input(input_text, file, agent):
 def main():
 
     # Initialize the models and agent
-    autoencoder_model_path = "/kaggle/input/ad_19-23_autoencoder_adamw_lr0001_ep2_loss0.6264/pytorch/default/1/AD_19-23_autoencoder_AdamW_lr0001_ep2_loss0.6264.pth"
-    classification_model_path = "/kaggle/input/classification_model_fold5_epoch20_loss0.0231.pth/pytorch/default/1/classification_model_fold5_epoch20_loss0.0231.pth"
+    autoencoder_model_path = "models/autoencoder_AdamW_lr0001_loss0.4037_fold5.pth"
+    classification_model_path = "models/classification_model_fold5_epoch20_loss0.0231.pth"
 
     # Initialize the LLM agent
     agent = LLM_Agent(autoencoder_model_path, classification_model_path)
